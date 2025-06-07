@@ -15,7 +15,7 @@ namespace UserAuthenticationService.DTOs.UserDTOs
         [EmailAddress]
         public required string Email { get; set; }
 
-        [StringLength(maximumLength: 50, MinimumLength = 6, ErrorMessage = "Length of the password should be between 6 to 50 characters!")]
+        [StringLength(maximumLength: 15, MinimumLength = 6, ErrorMessage = "Length of the password should be between 6 to 50 characters!")]
         public required string Password { get; set; }
     }
 }

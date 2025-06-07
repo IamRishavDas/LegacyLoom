@@ -5,17 +5,20 @@ using System.Threading.Tasks;
 using UserAuthenticationService.DTOs.UserDTOs;
 using UserAuthenticationService.Models;
 using UserAuthenticationService.Repositories;
+using UserAuthenticationService.Utils;
 
 namespace UserAuthenticationService.Services
 {
     public class UserService : IUserService
     {
         private readonly IUserRepository _userRepository;
+        private readonly PasswordHasher _passwordHasher;
         private readonly IMapper _mapper;
 
-        public UserService(IUserRepository userRepository, IMapper mapper)
+        public UserService(IUserRepository userRepository, PasswordHasher passwordHasher, IMapper mapper)
         {
             _userRepository = userRepository;
+            _passwordHasher = passwordHasher;
             _mapper = mapper;
         }
 
@@ -146,7 +149,7 @@ namespace UserAuthenticationService.Services
                     Id = Guid.NewGuid(),
                     Username = userCreate.Username,
                     Email = userCreate.Email.ToLower(),
-                    Password = userCreate.Password,
+                    Password = _passwordHasher.HashPassword(userCreate.Password),
                 };
 
                 var success = await _userRepository.CreateUser(user);

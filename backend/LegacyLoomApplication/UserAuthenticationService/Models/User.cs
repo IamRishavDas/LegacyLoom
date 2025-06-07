@@ -18,7 +18,7 @@ namespace UserAuthenticationService.Models
         [EmailAddress]
         public required string Email { get; set; }
 
-        [StringLength(maximumLength: 50, MinimumLength = 6, ErrorMessage = "Length of the password should be between 6 to 50 characters!")]
+        [StringLength(maximumLength: 250, MinimumLength = 6, ErrorMessage = "Length of the password should be between 6 to 50 characters!")]
         public required string Password { get; set; }
 
         public Role Role { get; set; } = Role.User;

@@ -43,7 +43,9 @@ namespace UserAuthenticationService.Repositories
 
         public async Task<User?> GetUser(Guid id)
         {
-            return await _userDbContext.Users.FindAsync(id);
+            var user = await _userDbContext.Users.FindAsync(id);
+            if (user == null || user.IsDeleted) return null;
+            return user;
         }
 
         public async Task<User?> GetUserByEmail(string email)
@@ -76,7 +78,7 @@ namespace UserAuthenticationService.Repositories
 
         public async Task<bool> IsUserExist(Guid id)
         {
-            return await _userDbContext.Users.AnyAsync(user => user.Id == id);
+            return await _userDbContext.Users.AnyAsync(user => user.Id == id && !user.IsDeleted);
         }
 
         public async Task<List<User>> GetDeletedUsers()

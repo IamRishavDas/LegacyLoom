@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using UserAuthenticationService.DTOs.UserAuthenticationDTOs;
 using UserAuthenticationService.Models;
 using UserAuthenticationService.Repositories;
+using UserAuthenticationService.Utils;
 
 namespace UserAuthenticationService.Services
 {
@@ -14,11 +15,13 @@ namespace UserAuthenticationService.Services
     {
         private readonly IUserRepository _userRepository;
         private readonly AuthenticationTokenProvider _tokenProvider;
+        private readonly PasswordHasher _passwordHasher;
 
-        public AuthService(IUserRepository userRepository, AuthenticationTokenProvider authenticationTokenProvider)
+        public AuthService(IUserRepository userRepository, AuthenticationTokenProvider authenticationTokenProvider, PasswordHasher passwordHasher)
         {
             _userRepository = userRepository;
             _tokenProvider = authenticationTokenProvider;
+            _passwordHasher = passwordHasher;
         }
 
         private async Task<(bool, User?)> ValidateUserCredentialsUsingUserNameAndPassword(UserLoginRequest userLoginRequest)
@@ -26,7 +29,7 @@ namespace UserAuthenticationService.Services
             try
             {
                 var user = await _userRepository.GetUserByUserName(userLoginRequest.UserName);
-                if (user == null || user.Password != userLoginRequest.Password)
+                if (user == null || !_passwordHasher.VerifyPassword(userLoginRequest.Password, user.Password))
                 {
                     return (false, null);
                 }
@@ -44,7 +47,7 @@ namespace UserAuthenticationService.Services
             try
             {
                 var user = await _userRepository.GetUserByEmail(userLoginRequest.Email.ToLower());
-                if (user == null || user.Password != userLoginRequest.Password)
+                if (user == null || !_passwordHasher.VerifyPassword(userLoginRequest.Password, user.Password))
                 {
                     return (false, null);
                 }
