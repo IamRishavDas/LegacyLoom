@@ -1,15 +1,19 @@
-﻿using UserAuthenticationService.Models;
+﻿using UserAuthenticationService.DTOs.UserDTOs;
+using UserAuthenticationService.Models;
 
 namespace UserAuthenticationService.Repositories
 {
     public interface IUserRepository
     {
-        public List<User> GetUsers(bool includeDeleted = false);
-        public User CreateUser(User user);
-        public User GetUser(Guid id);
-        public User GetUserByUserName(string userName);
-        public User GetUserByEmail(string email);
-        public User UpdateUserById(Guid id, User user);
-        public bool DeleteUserById(Guid id);
+        Task<bool> CreateUser(User user);
+        Task<List<User>> GetDeletedUsers();
+        Task<User?> GetUser(Guid id);
+        Task<User?> GetUserByEmail(string email);
+        Task<User?> GetUserByUserName(string userName);
+        Task<List<User>> GetUsers(bool includeDeleted = false);
+        Task<bool> IsUserExist(Guid id);
+        Task<bool> PermanentDeleteUserById(Guid id);
+        Task<bool> SoftDeleteUserById(Guid id);
+        Task<User?> UpdateUserById(Guid id, UserUpdateDTO userUpdate);
     }
 }

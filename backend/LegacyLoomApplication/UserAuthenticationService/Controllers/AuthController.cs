@@ -1,9 +1,9 @@
-﻿using AuthenticationManager;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
+using System.Threading.Tasks;
 using UserAuthenticationService.DTOs.UserAuthenticationDTOs;
-using UserAuthenticationService.Enums;
-using UserAuthenticationService.Repositories;
+using UserAuthenticationService.Services;
+using ServiceResponseShared;
+using System.Net;
 
 namespace UserAuthenticationService.Controllers
 {
@@ -11,42 +11,36 @@ namespace UserAuthenticationService.Controllers
     [ApiController]
     public class AuthController : ControllerBase
     {
-        private readonly IUserRepository _userRepository;
-        private readonly AuthenticationTokenProvider _tokenProvider;
+        private readonly IAuthService _authService;
 
-        public AuthController(IUserRepository userRepository, AuthenticationTokenProvider tokenProvider)
+        public AuthController(IAuthService authService)
         {
-            _userRepository = userRepository;
-            _tokenProvider = tokenProvider;
+            _authService = authService;
         }
 
         [HttpPost("login")]
-        public ActionResult<UserLoginResponse> Login(UserLoginRequest loginRequest)
+        public async Task<ActionResult<ServiceResponse<UserLoginResponse>>> Login([FromBody] UserLoginRequest loginRequest, [FromQuery] bool usingUserNameAndPassword = true)
         {
-            var user = _userRepository.GetUsers().Where(user => user.Username == loginRequest.UserName && user.Password == loginRequest.Password).FirstOrDefault();
-            if (user == null) return Unauthorized();
-            var (token, tokenExpiryTime) = _tokenProvider.GenerateJwtToken(user.Username, user.Role.ToString(), isTokenGeneratedWhileLogin: true);
-            var response = new UserLoginResponse()
+            if (!ModelState.IsValid)
             {
-                Id = user.Id,
-                UserName = user.Username,
-                Token = token,
-                ExpiresIn = (int)tokenExpiryTime.Subtract(DateTime.Now).TotalSeconds,
-            };
-            return Ok(response);
+                var errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage).ToList();
+                return BadRequest(ServiceResponse<UserLoginResponse>.Failure("Invalid input data", errors, (int)HttpStatusCode.BadRequest));
+            }
+
+            var response = await _authService.GenerateTokenForLogin(loginRequest, usingUserNameAndPassword);
+            if (!response.Success)
+            {
+                return Unauthorized(ServiceResponse<UserLoginResponse>.Failure(response.ErrorMessage ?? "Invalid credentials", response.Errors, (int)HttpStatusCode.Unauthorized));
+            }
+
+            return StatusCode(response.StatusCode, response);
         }
 
         [HttpPost("logout")]
-        public ActionResult<UserLoginResponse> Logout()
+        public ActionResult<ServiceResponse<UserLoginResponse>> Logout()
         {
-            var (token, tokenExpiryTime) = _tokenProvider.GenerateJwtToken("", "", isTokenGeneratedWhileLogin: false);
-            var response = new UserLoginResponse()
-            {
-                Id = Guid.Empty,
-                UserName = "",
-                Token = token,
-            };
-            return Ok(response);
+            var response = _authService.GenerateTokenForLogout();
+            return StatusCode(response.StatusCode, response);
         }
     }
 }

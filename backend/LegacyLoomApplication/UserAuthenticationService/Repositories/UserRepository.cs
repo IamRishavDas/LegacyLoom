@@ -1,51 +1,87 @@
-﻿using UserAuthenticationService.Models;
+﻿using Microsoft.EntityFrameworkCore;
+using System.Reflection.Metadata.Ecma335;
+using System.Threading.Tasks;
+using UserAuthenticationService.Data;
+using UserAuthenticationService.DTOs.UserDTOs;
+using UserAuthenticationService.Models;
 
 namespace UserAuthenticationService.Repositories
 {
     public class UserRepository : IUserRepository
     {
+        private readonly UserDbContext _userDbContext;
 
-        private static List<User> _users = new List<User>()
-            {
-                new(){Id = Guid.NewGuid(), Email = "iamrishavdas@gmail.com", Password = "rishav", Username = "iamrishavdas", Role = Enums.Role.Admin},
-                new(){Id = Guid.NewGuid(), Email = "iamrohit@gmail.com", Password = "rohit", Username = "iamrohit", Role = Enums.Role.Moderator},
-                new(){Id = Guid.NewGuid(), Email = "iammanish@gmail.com", Password = "manish", Username = "manish", Role = Enums.Role.User},
-            };
-
-
-        public User CreateUser(User user)
+        public UserRepository(UserDbContext userDbContext)
         {
-            throw new NotImplementedException();
+            _userDbContext = userDbContext;
         }
 
-        public bool DeleteUserById(Guid id)
+        public async Task<bool> CreateUser(User user)
         {
-            throw new NotImplementedException();
+            await _userDbContext.Users.AddAsync(user);
+            return await _userDbContext.SaveChangesAsync() > 0;
         }
 
-        public User GetUser(Guid id)
+        public async Task<bool> PermanentDeleteUserById(Guid id)
         {
-            return _users.Find(user => user.Id == id);
+            var user = await GetUser(id);
+            if (user == null) return false;
+            _userDbContext.Users.Remove(user);
+            return await _userDbContext.SaveChangesAsync() > 0;
         }
 
-        public User GetUserByEmail(string email)
+        public async Task<bool> SoftDeleteUserById(Guid id)
         {
-            return _users.Find(user => user.Email == email);
+            var user = await GetUser(id);
+            if (user == null) return false;
+
+            user.IsDeleted = true;
+            _userDbContext.Users.Update(user);
+
+            return await _userDbContext.SaveChangesAsync() > 0;
         }
 
-        public User GetUserByUserName(string userName)
+        public async Task<User?> GetUser(Guid id)
         {
-            return _users.Find(user => user.Username == userName);
+            return await _userDbContext.Users.FindAsync(id);
         }
 
-        public List<User> GetUsers(bool includeDeleted = false)
+        public async Task<User?> GetUserByEmail(string email)
         {
-            return _users;
+            return await _userDbContext.Users.Where(user => user.Email == email && !user.IsDeleted).FirstOrDefaultAsync();
         }
 
-        public User UpdateUserById(Guid id, User user)
+        public async Task<User?> GetUserByUserName(string userName)
         {
-            throw new NotImplementedException();
+            return await _userDbContext.Users.Where(user => user.Username == userName && !user.IsDeleted).FirstOrDefaultAsync();
+        }
+
+        public async Task<List<User>> GetUsers(bool includeDeleted = false)
+        {
+            return !includeDeleted ? await _userDbContext.Users.Where(user => !user.IsDeleted).ToListAsync() :
+                await _userDbContext.Users.ToListAsync();
+        }
+
+        public async Task<User?> UpdateUserById(Guid id, UserUpdateDTO userUpdate)
+        {
+            var user = await GetUser(id);
+            if (user == null) return null;
+
+            user.Username = userUpdate.Username;
+            user.Email = userUpdate.Email;
+
+            _userDbContext.Users.Update(user);
+            return await _userDbContext.SaveChangesAsync() > 0 ? user : null;
+        }
+
+        public async Task<bool> IsUserExist(Guid id)
+        {
+            return await _userDbContext.Users.AnyAsync(user => user.Id == id);
+        }
+
+        public async Task<List<User>> GetDeletedUsers()
+        {
+            return await _userDbContext.Users.Where(user => user.IsDeleted).ToListAsync();
         }
     }
 }

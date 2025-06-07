@@ -1,5 +1,9 @@
 using AuthenticationManager;
+using Microsoft.EntityFrameworkCore;
+using UserAuthenticationService.Data;
+using UserAuthenticationService.MappingConfiguration;
 using UserAuthenticationService.Repositories;
+using UserAuthenticationService.Services;
 
 
 
@@ -9,7 +13,13 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddJwtAuthenticationConfigurations();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<AuthenticationTokenProvider>();
+builder.Services.AddAutoMapper(typeof(UserMapper));
+builder.Services.AddDbContext<UserDbContext>(options =>
+    options.UseNpgsql(builder.Configuration.GetConnectionString("UserDb"))
+    );
 
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
