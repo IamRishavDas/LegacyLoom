@@ -1,4 +1,4 @@
-﻿namespace UserAuthenticationService.DTOs
+﻿namespace UserAuthenticationService.DTOs.UserAuthenticationDTOs
 {
     public class UserLoginResponse
     {

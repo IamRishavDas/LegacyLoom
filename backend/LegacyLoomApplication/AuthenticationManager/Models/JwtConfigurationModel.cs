@@ -12,5 +12,6 @@ namespace AuthenticationManager.Models
         public required string Issuer { get; set; }
         public required string Key { get; set; }
         public required int TokenValidityMins { get; set; }
+        public required string InvalidKey { get; set; }
     }
 }

@@ -23,6 +23,7 @@ namespace AuthenticationManager
                 options.SaveToken = true;
                 options.TokenValidationParameters = new TokenValidationParameters()
                 {
+                    ValidateLifetime = true,
                     ValidateIssuerSigningKey = true,
                     ValidateIssuer = false,
                     ValidateAudience = false,

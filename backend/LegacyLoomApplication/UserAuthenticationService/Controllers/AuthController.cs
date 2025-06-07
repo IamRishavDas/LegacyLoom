@@ -1,7 +1,8 @@
 ﻿using AuthenticationManager;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using UserAuthenticationService.DTOs;
+using UserAuthenticationService.DTOs.UserAuthenticationDTOs;
+using UserAuthenticationService.Enums;
 using UserAuthenticationService.Repositories;
 
 namespace UserAuthenticationService.Controllers
@@ -31,6 +32,19 @@ namespace UserAuthenticationService.Controllers
                 UserName = user.Username,
                 Token = token,
                 ExpiresIn = (int)tokenExpiryTime.Subtract(DateTime.Now).TotalSeconds,
+            };
+            return Ok(response);
+        }
+
+        [HttpPost("logout")]
+        public ActionResult<UserLoginResponse> Logout()
+        {
+            var (token, tokenExpiryTime) = _tokenProvider.GenerateJwtToken("", "", isTokenGeneratedWhileLogin: false);
+            var response = new UserLoginResponse()
+            {
+                Id = Guid.Empty,
+                UserName = "",
+                Token = token,
             };
             return Ok(response);
         }
