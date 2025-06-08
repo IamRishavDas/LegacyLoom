@@ -1,5 +1,5 @@
-import React, { useEffect, useRef, useState } from 'react';
-import { BookOpen, Heart, Users, Shield, ArrowRight, Sparkles, Clock, Star, Feather, Archive, Home } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
+import { Heart, Users, Shield, ArrowRight, Star, Feather, Archive, Home, Snowflake } from 'lucide-react';
 
 const LegacyLoomHomepage = () => {
   const heroRef = useRef(null);
@@ -67,7 +67,7 @@ const LegacyLoomHomepage = () => {
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center space-x-3">
               <div className="w-10 h-10 bg-gradient-to-br from-stone-600 to-slate-700 rounded-xl flex items-center justify-center shadow-lg">
-                <Home className="w-5 h-5 text-stone-100" />
+                <Snowflake className="w-5 h-5 text-stone-100" />
               </div>
               <span className="text-[19px] font-serif font-bold text-stone-800 tracking-wide">
                 Legacy Loom
@@ -92,29 +92,37 @@ const LegacyLoomHomepage = () => {
       </nav>
 
       {/* Hero Section */}
-      <section ref={heroRef} className="pt-28 pb-24 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-7xl mx-auto">
+      <section ref={heroRef} className="pt-28 pb-24 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
+        {/* Animated Background Elements */}
+        <div className="absolute inset-0 pointer-events-none">
+          <div className="absolute top-20 left-10 w-32 h-32 bg-gradient-to-br from-stone-200/30 to-slate-300/20 rounded-full blur-3xl animate-pulse"></div>
+          <div className="absolute top-40 right-20 w-48 h-48 bg-gradient-to-br from-stone-300/20 to-slate-200/30 rounded-full blur-3xl animate-pulse delay-1000"></div>
+          <div className="absolute bottom-32 left-1/4 w-40 h-40 bg-gradient-to-br from-stone-200/25 to-slate-300/15 rounded-full blur-3xl animate-pulse delay-2000"></div>
+        </div>
+        
+        <div className="max-w-7xl mx-auto relative">
           <div className="text-center">
             <div className={`transition-all duration-1200 ease-out transform ${isVisible ? 'translate-y-0 opacity-100' : 'translate-y-12 opacity-0'}`}>
-              <h1 className="text-5xl md:text-7xl font-serif font-bold text-stone-800 mb-8 leading-tight">
+              {/* Floating decorative elements */}
+              <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 animate-bounce delay-3000">
+                {/* <div className='flex gap-5'>
+                    <Sparkles className="w-6 h-6 text-stone-400/60" />
+                    <Sparkles className="w-6 h-6 text-stone-400/60" />
+                    <Sparkles className="w-6 h-6 text-stone-400/60" />
+                </div> */}
+              </div>
+              <h1 className="text-5xl md:text-7xl font-serif font-bold text-stone-800 mb-8 leading-tight relative">
                 Your Stories,
-                <span className="block text-stone-600 mt-2">
+                <span className="block text-stone-600 mt-2 bg-gradient-to-r from-stone-600 via-stone-700 to-slate-600 bg-clip-text animate-pulse">
                   Gently Woven
                 </span>
+                {/* Decorative underline */}
+                <div className="absolute -bottom-4 left-1/2 transform -translate-x-1/2 w-32 h-1 bg-gradient-to-r from-transparent via-stone-300 to-transparent rounded-full"></div>
               </h1>
               <p className="text-xl md:text-2xl text-stone-600 mb-16 max-w-4xl mx-auto leading-relaxed font-light">
                 Legacy Loom is more than an application—it's a quiet sanctuary for stories, where every whispered memory, 
                 gentle dream, and heartfelt aspiration finds a home that endures with grace.
               </p>
-            </div>
-
-            <div className={`transition-all duration-1200 delay-300 ease-out transform ${isVisible ? 'translate-y-0 opacity-100' : 'translate-y-12 opacity-0'}`}>
-              <div className="flex flex-col sm:flex-row gap-6 justify-center items-center mb-20">
-                <button className="bg-gradient-to-r from-stone-700 to-slate-800 text-stone-50 px-10 py-4 rounded-full text-lg font-medium hover:from-stone-800 hover:to-slate-900 transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl flex items-center space-x-3">
-                  <span>Begin Your Story</span>
-                  <ArrowRight className="w-5 h-5" />
-                </button>
-              </div>
             </div>
 
             {/* Floating Elements */}
