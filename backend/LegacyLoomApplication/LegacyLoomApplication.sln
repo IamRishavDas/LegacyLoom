@@ -19,6 +19,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AuthenticationManager", "Au
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceResponseShared", "ServiceResponseShared\ServiceResponseShared.csproj", "{2D6D95E4-5C9C-41AB-894B-59A5BA84A6AE}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "NotificationService", "NotificationService", "{0BAC2943-7665-4992-9D3E-31C00105CACC}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NotificationService", "NotificationService\NotificationService.csproj", "{64A1706B-FEC1-4EB2-835F-F495A96C0FA6}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -41,6 +45,10 @@ Global
 		{2D6D95E4-5C9C-41AB-894B-59A5BA84A6AE}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{2D6D95E4-5C9C-41AB-894B-59A5BA84A6AE}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{2D6D95E4-5C9C-41AB-894B-59A5BA84A6AE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{64A1706B-FEC1-4EB2-835F-F495A96C0FA6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{64A1706B-FEC1-4EB2-835F-F495A96C0FA6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{64A1706B-FEC1-4EB2-835F-F495A96C0FA6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{64A1706B-FEC1-4EB2-835F-F495A96C0FA6}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -52,6 +60,8 @@ Global
 		{C2228726-9045-46AA-858F-7E0614D2A3BA} = {FA00249B-6C9A-4055-9D5D-50CADC670569}
 		{A73CDCDB-E056-4D8B-B5C7-5CEABEE97CBE} = {3624BA5F-9E01-4AAC-A882-AB1DA4686E58}
 		{2D6D95E4-5C9C-41AB-894B-59A5BA84A6AE} = {3624BA5F-9E01-4AAC-A882-AB1DA4686E58}
+		{0BAC2943-7665-4992-9D3E-31C00105CACC} = {9519060A-D874-4692-BD10-CA2D9917978F}
+		{64A1706B-FEC1-4EB2-835F-F495A96C0FA6} = {0BAC2943-7665-4992-9D3E-31C00105CACC}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {3293D374-5595-4D3A-81BC-F9F66A02E877}
