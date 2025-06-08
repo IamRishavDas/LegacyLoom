@@ -1,7 +1,9 @@
+import LegacyLoomHomepage from "./components/LegacyLoomHomepage"
+
 function App() {
   return (
     <>
-      <div>Welcome to Legacy Loom</div>
+      <LegacyLoomHomepage/>
     </>
   )
 }
