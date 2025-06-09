@@ -5,6 +5,9 @@ using System.Threading.Tasks;
 using UserAuthenticationService.DTOs.UserDTOs;
 using UserAuthenticationService.Services;
 using ServiceResponseShared;
+using UserAuthenticationService.RequestFeatures;
+using System.Text.Json;
+using RequestFeatureShared.Constants;
 
 namespace UserAuthenticationService.Controllers
 {
@@ -22,10 +25,12 @@ namespace UserAuthenticationService.Controllers
         // GET: api/users
         [HttpGet]
         [Authorize(Roles = "Admin,Moderator")]
-        public async Task<ActionResult<ServiceResponse<IEnumerable<UserDTO>>>> GetUsers([FromQuery] bool includeDeleted = false)
+        public async Task<ActionResult<ServiceResponse<IEnumerable<UserDTO>>>> GetUsers([FromQuery]UserRequestParameters userRequestParams, 
+            [FromQuery] bool includeDeleted = false)
         {
-            var response = await _userService.GetUsersAsync(includeDeleted);
-            return StatusCode(response.StatusCode, response);
+            var (users, metadata) = await _userService.GetUsersAsync(userRequestParams, includeDeleted);
+            Response.Headers.Append(HeaderKey.PAGINATION, JsonSerializer.Serialize(metadata));
+            return StatusCode(users.StatusCode, users);
         }
 
         // GET: api/users/{id}
@@ -115,10 +120,11 @@ namespace UserAuthenticationService.Controllers
         // GET: api/users/deleted
         [HttpGet("deleted")]
         [Authorize(Roles = "Admin")]
-        public async Task<ActionResult<ServiceResponse<IEnumerable<UserDTO>>>> GetDeletedUsers()
+        public async Task<ActionResult<ServiceResponse<IEnumerable<UserDTO>>>> GetDeletedUsers(UserRequestParameters userRequestParams)
         {
-            var response = await _userService.GetDeletedUsersAsync();
-            return StatusCode(response.StatusCode, response);
+            var (users, metadata) = await _userService.GetDeletedUsersAsync(userRequestParams);
+            Response.Headers.Append(HeaderKey.PAGINATION, JsonSerializer.Serialize(metadata));
+            return StatusCode(users.StatusCode, users);
         }
     }
 }

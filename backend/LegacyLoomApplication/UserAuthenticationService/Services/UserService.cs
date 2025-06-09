@@ -1,10 +1,12 @@
 ﻿using AutoMapper;
+using RequestFeatureShared;
 using ServiceResponseShared;
 using System.Net;
 using System.Threading.Tasks;
 using UserAuthenticationService.DTOs.UserDTOs;
 using UserAuthenticationService.Models;
 using UserAuthenticationService.Repositories;
+using UserAuthenticationService.RequestFeatures;
 using UserAuthenticationService.Utils;
 
 namespace UserAuthenticationService.Services
@@ -22,20 +24,20 @@ namespace UserAuthenticationService.Services
             _mapper = mapper;
         }
 
-        public async Task<ServiceResponse<IEnumerable<UserDTO>>> GetUsersAsync(bool includeDeleted = false)
+        public async Task<(ServiceResponse<IEnumerable<UserDTO>> users, MetaData metadata)> GetUsersAsync(UserRequestParameters userRequestParams, bool includeDeleted = false)
         {
             try
             {
-                var users = await _userRepository.GetUsers(includeDeleted);
-                var userDTOs = _mapper.Map<IList<UserDTO>>(users);
-                return ServiceResponse<IEnumerable<UserDTO>>.SuccessResult(userDTOs, (int)HttpStatusCode.OK, "Users retrieved successfully");
+                var usersWithMetaData = await _userRepository.GetUsers(userRequestParams, includeDeleted);
+                var userDTOs = _mapper.Map<IList<UserDTO>>(usersWithMetaData);
+                return (users: ServiceResponse<IEnumerable<UserDTO>>.SuccessResult(userDTOs, (int)HttpStatusCode.OK, "Users retrieved successfully"), metadata: usersWithMetaData.MetaData);
             }
             catch (Exception ex)
             {
-                return ServiceResponse<IEnumerable<UserDTO>>.Failure(
+                return (users: ServiceResponse<IEnumerable<UserDTO>>.Failure(
                     "Error while retrieving users",
                     new List<string> { ex.Message },
-                    (int)HttpStatusCode.BadRequest);
+                    (int)HttpStatusCode.BadRequest), metadata: new MetaData());
             }
         }
 
@@ -278,20 +280,20 @@ namespace UserAuthenticationService.Services
             }
         }
 
-        public async Task<ServiceResponse<IEnumerable<UserDTO>>> GetDeletedUsersAsync()
+        public async Task<(ServiceResponse<IEnumerable<UserDTO>> users, MetaData metadata)> GetDeletedUsersAsync(UserRequestParameters userRequestParams)
         {
             try
             {
-                var deletedUsers = await _userRepository.GetDeletedUsers();
-                var userDTOs = _mapper.Map<IList<UserDTO>>(deletedUsers);
-                return ServiceResponse<IEnumerable<UserDTO>>.SuccessResult(userDTOs, (int)HttpStatusCode.OK, "Deleted users retrieved successfully");
+                var deletedUsersWithMetaData = await _userRepository.GetDeletedUsers(userRequestParams);
+                var userDTOs = _mapper.Map<IList<UserDTO>>(deletedUsersWithMetaData);
+                return (users: ServiceResponse<IEnumerable<UserDTO>>.SuccessResult(userDTOs, (int)HttpStatusCode.OK, "Deleted users retrieved successfully"), metadata: deletedUsersWithMetaData.MetaData);
             }
             catch (Exception ex)
             {
-                return ServiceResponse<IEnumerable<UserDTO>>.Failure(
+                return (users: ServiceResponse<IEnumerable<UserDTO>>.Failure(
                     "Error while retrieving deleted users",
                     new List<string> { ex.Message },
-                    (int)HttpStatusCode.BadRequest);
+                    (int)HttpStatusCode.BadRequest), metadata: new MetaData());
             }
         }
     }
