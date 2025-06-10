@@ -10,7 +10,7 @@ namespace RequestFeatureShared
         public int PageNumber { get; set; } = 1;
         private int _pageSize = 10;
 
-        [Range(minimum:1, maximum:10, ErrorMessage = "Page size must be between 1 to 10")]
+        [Range(minimum: 1, maximum: 10, ErrorMessage = "Page size must be between 1 to 10")]
         public int PageSize
         {
             get { return _pageSize; }

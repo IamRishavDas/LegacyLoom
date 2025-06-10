@@ -5,7 +5,8 @@ namespace UserAuthenticationService.Services
 {
     public interface IAuthService
     {
-        Task<ServiceResponse<UserLoginResponse>> GenerateTokenForLogin(UserLoginRequest userLoginRequest, bool usingUserNameAndPassword = true);
+        Task<ServiceResponse<UserLoginResponse>> GenerateTokenForLoginByEmail(UserLoginRequestByEmail userLoginRequest);
+        Task<ServiceResponse<UserLoginResponse>> GenerateTokenForLoginByUsername(UserLoginRequestByUsername userLoginRequest);
         ServiceResponse<UserLoginResponse> GenerateTokenForLogout();
     }
 }

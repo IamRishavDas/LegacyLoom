@@ -11,6 +11,8 @@ namespace RequestFeatureShared.SortHelper
             if (entities == null)
                 throw new ArgumentNullException(nameof(entities));
 
+            Console.WriteLine($"OderByQueryString: {orderByQueryString}");
+
             if (entities.Any() || string.IsNullOrWhiteSpace(orderByQueryString))
                 return entities;
 
@@ -29,6 +31,8 @@ namespace RequestFeatureShared.SortHelper
                     continue;
 
                 var propertyName = parts[0];
+                Console.WriteLine($"Param1: {propertyName}");
+                Console.WriteLine($"Param2: {parts[1]}");
                 var objectProperty = propertyInfos.FirstOrDefault(pi => pi.Name.Equals(propertyName, StringComparison.OrdinalIgnoreCase));
 
                 if (objectProperty == null)
@@ -40,6 +44,7 @@ namespace RequestFeatureShared.SortHelper
                 var sortingOrder = parts.Length > 1 && parts[1].Equals("desc", StringComparison.OrdinalIgnoreCase)
                     ? "descending"
                     : "ascending";
+                Console.WriteLine($"Sorting Order: {sortingOrder}");
 
                 orderQueryBuilder.Append($"{objectProperty.Name} {sortingOrder}, ");
             }
@@ -50,6 +55,7 @@ namespace RequestFeatureShared.SortHelper
                 return entities; // No valid sort parameters
             }
 
+            Console.WriteLine($"Order Query: {orderQuery}");
             return entities.OrderBy(orderQuery);
         }
     }

@@ -18,8 +18,8 @@ namespace UserAuthenticationService.Controllers
             _authService = authService;
         }
 
-        [HttpPost("login")]
-        public async Task<ActionResult<ServiceResponse<UserLoginResponse>>> Login([FromBody] UserLoginRequest loginRequest, [FromQuery] bool usingUserNameAndPassword = true)
+        [HttpPost("login/username")]
+        public async Task<ActionResult<ServiceResponse<UserLoginResponse>>> LoginUsingUsername([FromBody] UserLoginRequestByUsername loginRequest, [FromQuery] bool usingUserNameAndPassword = true)
         {
             if (!ModelState.IsValid)
             {
@@ -27,7 +27,25 @@ namespace UserAuthenticationService.Controllers
                 return BadRequest(ServiceResponse<UserLoginResponse>.Failure("Invalid input data", errors, (int)HttpStatusCode.BadRequest));
             }
 
-            var response = await _authService.GenerateTokenForLogin(loginRequest, usingUserNameAndPassword);
+            var response = await _authService.GenerateTokenForLoginByUsername(loginRequest);
+            if (!response.Success)
+            {
+                return Unauthorized(ServiceResponse<UserLoginResponse>.Failure(response.ErrorMessage ?? "Invalid credentials", response.Errors, (int)HttpStatusCode.Unauthorized));
+            }
+
+            return StatusCode(response.StatusCode, response);
+        }
+        
+        [HttpPost("login/email")]
+        public async Task<ActionResult<ServiceResponse<UserLoginResponse>>> LoginUsingEmail([FromBody] UserLoginRequestByEmail loginRequest, [FromQuery] bool usingUserNameAndPassword = true)
+        {
+            if (!ModelState.IsValid)
+            {
+                var errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage).ToList();
+                return BadRequest(ServiceResponse<UserLoginResponse>.Failure("Invalid input data", errors, (int)HttpStatusCode.BadRequest));
+            }
+
+            var response = await _authService.GenerateTokenForLoginByEmail(loginRequest);
             if (!response.Success)
             {
                 return Unauthorized(ServiceResponse<UserLoginResponse>.Failure(response.ErrorMessage ?? "Invalid credentials", response.Errors, (int)HttpStatusCode.Unauthorized));
