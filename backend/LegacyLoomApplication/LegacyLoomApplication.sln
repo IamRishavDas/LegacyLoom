@@ -25,6 +25,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NotificationService", "Noti
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RequestFeatureShared", "RequestFeatureShared\RequestFeatureShared.csproj", "{833EB35C-996D-4B04-8488-A2ECA868505E}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{4936EF32-BC70-45E6-8913-62E465574987}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LegacyLoom.Tests", "LegacyLoom.Tests\LegacyLoom.Tests.csproj", "{356720D2-4A0B-4391-B992-56917F5E20B1}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -55,6 +59,10 @@ Global
 		{833EB35C-996D-4B04-8488-A2ECA868505E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{833EB35C-996D-4B04-8488-A2ECA868505E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{833EB35C-996D-4B04-8488-A2ECA868505E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{356720D2-4A0B-4391-B992-56917F5E20B1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{356720D2-4A0B-4391-B992-56917F5E20B1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{356720D2-4A0B-4391-B992-56917F5E20B1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{356720D2-4A0B-4391-B992-56917F5E20B1}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -69,6 +77,7 @@ Global
 		{0BAC2943-7665-4992-9D3E-31C00105CACC} = {9519060A-D874-4692-BD10-CA2D9917978F}
 		{64A1706B-FEC1-4EB2-835F-F495A96C0FA6} = {0BAC2943-7665-4992-9D3E-31C00105CACC}
 		{833EB35C-996D-4B04-8488-A2ECA868505E} = {3624BA5F-9E01-4AAC-A882-AB1DA4686E58}
+		{356720D2-4A0B-4391-B992-56917F5E20B1} = {4936EF32-BC70-45E6-8913-62E465574987}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {3293D374-5595-4D3A-81BC-F9F66A02E877}
