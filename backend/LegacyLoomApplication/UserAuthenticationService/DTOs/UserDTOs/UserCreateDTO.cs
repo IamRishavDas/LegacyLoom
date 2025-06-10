@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
-using UserAuthenticationService.Enums;
+using UserAuthenticationService.CustomValidations;
 
 namespace UserAuthenticationService.DTOs.UserDTOs
 {
@@ -15,7 +15,8 @@ namespace UserAuthenticationService.DTOs.UserDTOs
         [EmailAddress]
         public required string Email { get; set; }
 
-        [StringLength(maximumLength: 15, MinimumLength = 6, ErrorMessage = "Length of the password should be between 6 to 50 characters!")]
+        [PasswordStrengthValidation]
+        [StringLength(maximumLength: 15, MinimumLength = 8, ErrorMessage = "Length of the password should be between 6 to 50 characters!")]
         public required string Password { get; set; }
     }
 }

@@ -24,6 +24,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\AuthenticationManager\AuthenticationManager.csproj" />
+    <ProjectReference Include="..\RequestFeatureShared\RequestFeatureShared.csproj" />
     <ProjectReference Include="..\ServiceResponseShared\ServiceResponseShared.csproj" />
   </ItemGroup>
 

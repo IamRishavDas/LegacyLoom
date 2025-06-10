@@ -24,7 +24,7 @@ namespace UserAuthenticationService.Services
             _passwordHasher = passwordHasher;
         }
 
-        private async Task<(bool, User?)> ValidateUserCredentialsUsingUserNameAndPassword(UserLoginRequest userLoginRequest)
+        private async Task<(bool, User?)> ValidateUserCredentialsUsingUserNameAndPassword(UserLoginRequestByUsername userLoginRequest)
         {
             try
             {
@@ -42,7 +42,7 @@ namespace UserAuthenticationService.Services
             }
         }
 
-        private async Task<(bool, User?)> ValidateUserCredentialsUsingEmailAndPassword(UserLoginRequest userLoginRequest)
+        private async Task<(bool, User?)> ValidateUserCredentialsUsingEmailAndPassword(UserLoginRequestByEmail userLoginRequest)
         {
             try
             {
@@ -60,7 +60,7 @@ namespace UserAuthenticationService.Services
             }
         }
 
-        public async Task<ServiceResponse<UserLoginResponse>> GenerateTokenForLogin(UserLoginRequest userLoginRequest, bool usingUserNameAndPassword = true)
+        public async Task<ServiceResponse<UserLoginResponse>> GenerateTokenForLoginByUsername(UserLoginRequestByUsername userLoginRequest)
         {
             try
             {
@@ -71,9 +71,7 @@ namespace UserAuthenticationService.Services
                         (int)HttpStatusCode.BadRequest);
                 }
 
-                var (isValidUser, user) = usingUserNameAndPassword
-                    ? await ValidateUserCredentialsUsingUserNameAndPassword(userLoginRequest)
-                    : await ValidateUserCredentialsUsingEmailAndPassword(userLoginRequest);
+                var (isValidUser, user) = await ValidateUserCredentialsUsingUserNameAndPassword(userLoginRequest);
 
                 if (!isValidUser || user == null)
                 {
@@ -87,6 +85,51 @@ namespace UserAuthenticationService.Services
                 {
                     Id = user.Id,
                     UserName = user.Username,
+                    Email = user.Email,
+                    Token = token,
+                    ExpiresIn = (int)tokenExpiryTime.Subtract(DateTime.Now).TotalSeconds
+                };
+
+                return ServiceResponse<UserLoginResponse>.SuccessResult(
+                    response,
+                    (int)HttpStatusCode.OK,
+                    "Login successful");
+            }
+            catch (Exception ex)
+            {
+                return ServiceResponse<UserLoginResponse>.Failure(
+                    "Error during login",
+                    new List<string> { ex.Message },
+                    (int)HttpStatusCode.BadRequest);
+            }
+        }
+
+        public async Task<ServiceResponse<UserLoginResponse>> GenerateTokenForLoginByEmail(UserLoginRequestByEmail userLoginRequest)
+        {
+            try
+            {
+                if (userLoginRequest == null)
+                {
+                    return ServiceResponse<UserLoginResponse>.Failure(
+                        "Login request cannot be null",
+                        (int)HttpStatusCode.BadRequest);
+                }
+
+                var (isValidUser, user) = await ValidateUserCredentialsUsingEmailAndPassword(userLoginRequest);
+
+                if (!isValidUser || user == null)
+                {
+                    return ServiceResponse<UserLoginResponse>.Failure(
+                        "Invalid username/email or password",
+                        (int)HttpStatusCode.BadRequest);
+                }
+
+                var (token, tokenExpiryTime) = _tokenProvider.GenerateJwtToken(user.Username, user.Role.ToString(), isTokenGeneratedWhileLogin: true);
+                var response = new UserLoginResponse
+                {
+                    Id = user.Id,
+                    UserName = user.Username,
+                    Email = user.Email,
                     Token = token,
                     ExpiresIn = (int)tokenExpiryTime.Subtract(DateTime.Now).TotalSeconds
                 };
@@ -114,6 +157,7 @@ namespace UserAuthenticationService.Services
                 {
                     Id = Guid.Empty,
                     UserName = "",
+                    Email = "",
                     Token = token,
                     ExpiresIn = (int)tokenExpiryTime.Subtract(DateTime.Now).TotalSeconds
                 };

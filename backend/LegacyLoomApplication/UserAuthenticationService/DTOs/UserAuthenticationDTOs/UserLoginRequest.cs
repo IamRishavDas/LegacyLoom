@@ -1,9 +1,23 @@
-﻿namespace UserAuthenticationService.DTOs.UserAuthenticationDTOs
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace UserAuthenticationService.DTOs.UserAuthenticationDTOs
 {
-    public class UserLoginRequest
+    public class UserLoginRequestByUsername
     {
-        public string UserName { get; set; }
-        public string Email { get; set; }
-        public string Password { get; set; }
+        [Required]
+        public required string UserName { get; set; }
+
+        [Required]
+        public required string Password { get; set; }
+    }
+    
+    public class UserLoginRequestByEmail
+    {
+        [Required]
+        [EmailAddress]
+        public required string Email { get; set; }
+
+        [Required]
+        public required string Password { get; set; }
     }
 }

@@ -1,19 +1,22 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using System.Reflection.Metadata.Ecma335;
-using System.Threading.Tasks;
+using RequestFeatureShared;
+using RequestFeatureShared.SortHelper;
 using UserAuthenticationService.Data;
 using UserAuthenticationService.DTOs.UserDTOs;
 using UserAuthenticationService.Models;
+using UserAuthenticationService.RequestFeatures;
 
 namespace UserAuthenticationService.Repositories
 {
     public class UserRepository : IUserRepository
     {
         private readonly UserDbContext _userDbContext;
+        private readonly ISortHelper<User> _userSortHelper;
 
-        public UserRepository(UserDbContext userDbContext)
+        public UserRepository(UserDbContext userDbContext, ISortHelper<User> userSortHelper)
         {
             _userDbContext = userDbContext;
+            _userSortHelper = userSortHelper;
         }
 
         public async Task<bool> CreateUser(User user)
@@ -58,10 +61,20 @@ namespace UserAuthenticationService.Repositories
             return await _userDbContext.Users.Where(user => user.Username == userName && !user.IsDeleted).FirstOrDefaultAsync();
         }
 
-        public async Task<List<User>> GetUsers(bool includeDeleted = false)
+        public async Task<PagedList<User>> GetUsers(UserRequestParameters userRequestParams, bool includeDeleted = false)
         {
-            return !includeDeleted ? await _userDbContext.Users.Where(user => !user.IsDeleted).ToListAsync() :
-                await _userDbContext.Users.ToListAsync();
+            var results = !includeDeleted ? _userDbContext.Users
+                .Where(user => !user.IsDeleted)
+                : _userDbContext.Users;
+
+            results = SearchByName(results, userRequestParams.Name);
+            var sortedUsers = _userSortHelper.ApplySort(results, userRequestParams.OrderBy);
+
+            var count = await results.CountAsync();
+            var users = await results
+                .Skip((userRequestParams.PageNumber - 1) * userRequestParams.PageSize)
+                .ToListAsync();
+            return PagedList<User>.ToPagedList(sortedUsers, count, userRequestParams.PageNumber, userRequestParams.PageSize);
         }
 
         public async Task<User?> UpdateUserById(Guid id, UserUpdateDTO userUpdate)
@@ -81,9 +94,24 @@ namespace UserAuthenticationService.Repositories
             return await _userDbContext.Users.AnyAsync(user => user.Id == id && !user.IsDeleted);
         }
 
-        public async Task<List<User>> GetDeletedUsers()
+        public async Task<PagedList<User>> GetDeletedUsers(UserRequestParameters userRequestParams)
         {
-            return await _userDbContext.Users.Where(user => user.IsDeleted).ToListAsync();
+            var results = _userDbContext.Users.Where(user => user.IsDeleted);
+
+            results = SearchByName(results, userRequestParams.Name);
+            var count = await results.CountAsync();
+            var users = await results
+                .Skip((userRequestParams.PageNumber - 1) * userRequestParams.PageSize)
+                .ToListAsync();
+            return PagedList<User>.ToPagedList(users, count, userRequestParams.PageNumber, userRequestParams.PageSize);
+
+        }
+
+        private IQueryable<User> SearchByName(IQueryable<User> users, string? searchName)
+        {
+            if (!users.Any() || string.IsNullOrWhiteSpace(searchName)) return users;
+            var searchedUsers = users.Where(user => user.Username.ToLower().Contains(searchName.Trim().ToLower()));
+            return searchedUsers;
         }
     }
 }
