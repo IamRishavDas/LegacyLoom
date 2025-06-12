@@ -169,6 +169,7 @@ namespace UserAuthenticationService.Services
                 var userDTO = _mapper.Map<UserDTO>(user);
                 await _publishEndpoint.Publish<UserRegistered>(new
                 {
+                    Id = user.Id,
                     Username = user.Username,
                     Email = user.Email
                 });

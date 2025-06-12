@@ -1,6 +1,8 @@
 using AuthenticationManager;
+using MongoDB.Driver;
 using NotificationService.ConsumerRegistrationExtension;
 using NotificationService.EmailTemplates;
+using NotificationService.Models;
 using NotificationService.Services;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -11,6 +13,18 @@ builder.Services.AddJwtAuthenticationConfigurations();
 builder.Services.AddSingleton<Templates>();
 builder.Services.AddScoped<INotificationSender, NotificationSender>();
 builder.Services.AddMassTransitRegistrationForConsumer();
+builder.Services.Configure<NotificationDbSettings>(
+        builder.Configuration.GetSection("NotificationDbSettings")
+    );
+builder.Services.AddSingleton<IMongoClient>(_ => {
+    var connectionString =
+        builder
+            .Configuration
+            .GetSection("NotificationDbSettings:ConnectionString")?
+            .Value;
+
+    return new MongoClient(connectionString);
+});
 
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
