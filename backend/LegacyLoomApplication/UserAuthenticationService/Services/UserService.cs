@@ -1,4 +1,6 @@
 ﻿using AutoMapper;
+using EventModelsShared;
+using MassTransit;
 using RequestFeatureShared;
 using ServiceResponseShared;
 using System.Net;
@@ -15,12 +17,14 @@ namespace UserAuthenticationService.Services
     {
         private readonly IUserRepository _userRepository;
         private readonly PasswordHasher _passwordHasher;
+        private readonly IPublishEndpoint _publishEndpoint;
         private readonly IMapper _mapper;
 
-        public UserService(IUserRepository userRepository, PasswordHasher passwordHasher, IMapper mapper)
+        public UserService(IUserRepository userRepository, PasswordHasher passwordHasher, IPublishEndpoint publishEndpoint, IMapper mapper)
         {
             _userRepository = userRepository;
             _passwordHasher = passwordHasher;
+            _publishEndpoint = publishEndpoint;
             _mapper = mapper;
         }
 
@@ -149,9 +153,9 @@ namespace UserAuthenticationService.Services
                 var user = new User()
                 {
                     Id = Guid.NewGuid(),
-                    Username = userCreate.Username,
-                    Email = userCreate.Email.ToLower(),
-                    Password = _passwordHasher.HashPassword(userCreate.Password),
+                    Username = userCreate.Username.Trim(),
+                    Email = userCreate.Email.Trim().ToLower(),
+                    Password = _passwordHasher.HashPassword(userCreate.Password.Trim()),
                 };
 
                 var success = await _userRepository.CreateUser(user);
@@ -163,6 +167,12 @@ namespace UserAuthenticationService.Services
                 }
 
                 var userDTO = _mapper.Map<UserDTO>(user);
+                await _publishEndpoint.Publish<UserRegistered>(new
+                {
+                    Id = user.Id,
+                    Username = user.Username,
+                    Email = user.Email
+                });
                 return ServiceResponse<UserDTO>.SuccessResult(userDTO, (int)HttpStatusCode.OK, "User created successfully");
             }
             catch (Exception ex)

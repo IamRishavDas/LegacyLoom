@@ -1,4 +1,5 @@
 using AuthenticationManager;
+using MessageBrokerManager.Extensions;
 using Microsoft.EntityFrameworkCore;
 using RequestFeatureShared.SortHelper;
 using UserAuthenticationService.Data;
@@ -22,6 +23,7 @@ builder.Services.AddScoped<AuthenticationTokenProvider>();
 builder.Services.AddSingleton<PasswordHasher>();
 builder.Services.AddAutoMapper(typeof(UserMapper));
 builder.Services.AddSingleton<ISortHelper<User>, SortHelper<User>>();
+builder.Services.AddMassTransitConfigurations();
 builder.Services.AddDbContext<UserDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("UserDb"))
     );

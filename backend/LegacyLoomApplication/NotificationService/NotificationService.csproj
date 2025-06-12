@@ -7,11 +7,16 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="MongoDB.Driver" Version="3.4.0" />
     <PackageReference Include="SendGrid" Version="9.29.3" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.6.2" />
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\AuthenticationManager\AuthenticationManager.csproj" />
+    <ProjectReference Include="..\EventModelsShared\EventModelsShared.csproj" />
+    <ProjectReference Include="..\MessageBrokerManager\MessageBrokerManager.csproj" />
+    <ProjectReference Include="..\RequestFeatureShared\RequestFeatureShared.csproj" />
     <ProjectReference Include="..\ServiceResponseShared\ServiceResponseShared.csproj" />
   </ItemGroup>
 

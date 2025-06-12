@@ -4,6 +4,7 @@ using NotificationService.Services;
 using NotificationService.EmailTemplates;
 using ServiceResponseShared;
 using SendGrid;
+using Microsoft.AspNetCore.Authorization;
 
 namespace NotificationService.Controllers
 {
@@ -19,6 +20,7 @@ namespace NotificationService.Controllers
         }
 
         [HttpPost("send")]
+        [Authorize("Admin")]
         public async Task<ActionResult<ServiceResponse<Response>>> SendWelcomeMailAsync([FromBody] EmailSenderModel emailSenderModel)
         {
             var response = await _notificationSender
