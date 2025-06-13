@@ -1,9 +1,9 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using System.Threading.Tasks;
 using UserAuthenticationService.DTOs.UserAuthenticationDTOs;
 using UserAuthenticationService.Services;
 using ServiceResponseShared;
 using System.Net;
+using RequestFeatureShared.Constants;
 
 namespace UserAuthenticationService.Controllers
 {
@@ -33,6 +33,7 @@ namespace UserAuthenticationService.Controllers
                 return Unauthorized(ServiceResponse<UserLoginResponse>.Failure(response.ErrorMessage ?? "Invalid credentials", response.Errors, (int)HttpStatusCode.Unauthorized));
             }
 
+            Response.Headers.Append(HeaderKey.AUTHORIZATION, $"Bearer {response.Data?.Token}");
             return StatusCode(response.StatusCode, response);
         }
         
@@ -51,6 +52,7 @@ namespace UserAuthenticationService.Controllers
                 return Unauthorized(ServiceResponse<UserLoginResponse>.Failure(response.ErrorMessage ?? "Invalid credentials", response.Errors, (int)HttpStatusCode.Unauthorized));
             }
 
+            Response.Headers.Append(HeaderKey.AUTHORIZATION, $"Bearer {response.Data?.Token}");
             return StatusCode(response.StatusCode, response);
         }
 
@@ -58,6 +60,7 @@ namespace UserAuthenticationService.Controllers
         public ActionResult<ServiceResponse<UserLoginResponse>> Logout()
         {
             var response = _authService.GenerateTokenForLogout();
+            Response.Headers.Append(HeaderKey.AUTHORIZATION, $"Bearer {response.Data?.Token}");
             return StatusCode(response.StatusCode, response);
         }
     }

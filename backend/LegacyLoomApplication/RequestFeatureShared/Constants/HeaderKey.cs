@@ -9,5 +9,6 @@ namespace RequestFeatureShared.Constants
     public class HeaderKey
     {
         public static string PAGINATION { get; } = "X-Pagination";
+        public static string AUTHORIZATION { get; } = "Authorization";
     }
 }

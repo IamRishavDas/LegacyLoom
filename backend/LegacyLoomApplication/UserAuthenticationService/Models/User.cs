@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
+using UserAuthenticationService.CustomValidations;
 using UserAuthenticationService.Enums;
 
 namespace UserAuthenticationService.Models
@@ -12,13 +13,16 @@ namespace UserAuthenticationService.Models
         [Required]
         [NotNull]
         [StringLength(maximumLength: 50, MinimumLength = 4, ErrorMessage = "Length of the user name should be between 4 to 50 characters!")]
+        [NoSpacesValidation]
         public required string Username { get; set; }
 
         [Required]
         [EmailAddress]
+        [NoSpacesValidation]
         public required string Email { get; set; }
 
         [StringLength(maximumLength: 250, MinimumLength = 6, ErrorMessage = "Length of the password should be between 6 to 50 characters!")]
+        [NoSpacesValidation]
         public required string Password { get; set; }
 
         public Role Role { get; set; } = Role.User;
