@@ -1,0 +1,8 @@
+spring:
+  data:
+    mongodb:
+      uri: ${MONGO_URI:mongodb://user:password@localhost:27017/db}
+      database: ${MONGO_DB:timeline_db}
+  config:
+    activate:
+      on-profile: dev
