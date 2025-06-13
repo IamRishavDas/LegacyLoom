@@ -4,6 +4,7 @@ using NotificationService.ConsumerRegistrationExtension;
 using NotificationService.EmailTemplates;
 using NotificationService.Models;
 using NotificationService.Services;
+using RequestFeatureShared.SortHelper;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -12,6 +13,8 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddJwtAuthenticationConfigurations();
 builder.Services.AddSingleton<Templates>();
 builder.Services.AddScoped<INotificationSender, NotificationSender>();
+builder.Services.AddScoped<INotificationService, NotificationService.Services.NotificationService>();
+builder.Services.AddSingleton<ISortHelper<Notification>, SortHelper<Notification>>();
 builder.Services.AddMassTransitRegistrationForConsumer();
 builder.Services.Configure<NotificationDbSettings>(
         builder.Configuration.GetSection("NotificationDbSettings")
