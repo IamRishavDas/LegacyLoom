@@ -9,14 +9,15 @@ namespace LegacyLoomApplicationGateway.Extensions
         public static void AddJsonFilesForOcelotConfig(this IConfigurationBuilder configuration)
         {
             configuration
-                .AddJsonFile("Configurations/globalConfig.json", optional: false, reloadOnChange: true)
-                .AddJsonFile("Configurations/authService.json",  optional: false, reloadOnChange: true)
-                .AddJsonFile("Configurations/userService.json",  optional: false, reloadOnChange: true);
+                .AddJsonFile("Configurations/globalConfig.json", optional: false, reloadOnChange: true);
+                //.AddJsonFile("Configurations/authService.json", optional: false, reloadOnChange: true)
+                //.AddJsonFile("Configurations/userService.json", optional: false, reloadOnChange: true)
+                //.AddJsonFile("Configurations/notificationService.json", optional: false, reloadOnChange: true);
         }
 
-        public static void AddOcelotConfig(this IServiceCollection services)
+        public static void AddOcelotConfig(this IServiceCollection services, IConfiguration configuration)
         {
-            services.AddOcelot()
+            services.AddOcelot(configuration)
                 .AddCacheManager(options =>
                 {
                     options.WithDictionaryHandle();
