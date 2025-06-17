@@ -9,22 +9,27 @@ namespace NotificationService.Services
     public class NotificationSender : INotificationSender
     {
         private readonly Templates _templates;
-        private readonly IConfiguration _configuration;
+        private readonly string API_KEY;
+        private readonly string EMAIL;
+        private readonly string APPLICAITON_NAME;
         public NotificationSender(Templates templates, IConfiguration configuration)
         {
             _templates = templates;
-            _configuration = configuration;
+            API_KEY = configuration["SendGridEmailSettings:ApiKey"] ?? throw new ArgumentNullException("SendGrid: ApiKey not found");
+            EMAIL = configuration["SendGridEmailSettings:Email"] ?? throw new ArgumentNullException("SendGrid: Email not found");
+            APPLICAITON_NAME = configuration["SendGridEmailSettings:ApplicationName"] ?? throw new ArgumentNullException("SendGrid: ApplicationName not found");
         }
 
-        public async Task<ServiceResponse<Response>> SendNotification(string toEmail, string subject, string userName, string message, TemplateName template)
+        public async Task<ServiceResponse<Response>> SendWelcomeNotificationAsync(string toEmail, string userName)
         {
             try
             {
-                var client = new SendGridClient(_configuration["SendGridEmailSettings:ApiKey"]);
-                var from = new EmailAddress(_configuration["SendGridEmailSettings:Email"], _configuration["SendGridEmailSettings:ApplicationName"]);
+                var client = new SendGridClient(API_KEY);
+                var from = new EmailAddress(EMAIL, APPLICAITON_NAME);
                 var to = new EmailAddress(toEmail, userName);
-                var msg = MailHelper.CreateSingleEmail(from, to, subject, message, _templates.GetTemplate(template, userName));
+                var msg = MailHelper.CreateSingleEmail(from, to, "Welcome to Legacy Loom", "", _templates.GetTemplate(TemplateName.WELCOME, userName));
                 var response = await client.SendEmailAsync(msg);
+                if (!response.IsSuccessStatusCode) throw new Exception();
                 return ServiceResponse<Response>.SuccessResult(response, (int)HttpStatusCode.Accepted);
             }
             catch (Exception ex)
