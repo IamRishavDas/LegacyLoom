@@ -21,7 +21,8 @@ builder.Services.AddMassTransitRegistrationForConsumer();
 builder.Services.Configure<NotificationDbSettings>(
         builder.Configuration.GetSection("NotificationDbSettings")
     );
-builder.Services.AddSingleton<IMongoClient>(_ => {
+builder.Services.AddSingleton<IMongoClient>(_ =>
+{
     var connectionString =
         builder
             .Configuration

@@ -7,6 +7,6 @@ namespace NotificationService.Services
 {
     public interface INotificationSender
     {
-        Task<ServiceResponse<Response>> SendNotification(string toEmail, string subject, string userName, string message, TemplateName template);
+        Task<ServiceResponse<Response>> SendWelcomeNotificationAsync(string toEmail, string userName);
     }
 }

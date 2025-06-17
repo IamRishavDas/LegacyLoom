@@ -30,12 +30,10 @@ namespace NotificationService.Controllers
         public async Task<ActionResult<ServiceResponse<Response>>> SendWelcomeMailAsync([FromBody] EmailSenderModel emailSenderModel)
         {
             var response = await _notificationSender
-                .SendNotification(
+                .SendWelcomeNotificationAsync(
                     emailSenderModel.ReceiverEmailAddress, 
-                    "Welcome to Legacy Loom", 
-                    emailSenderModel.UserName, 
-                    "", 
-                    TemplateName.WELCOME);
+                    emailSenderModel.UserName
+                    );
             return StatusCode(response.StatusCode, response);
         }
 

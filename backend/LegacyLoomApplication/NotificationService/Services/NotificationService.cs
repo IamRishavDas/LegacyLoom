@@ -1,5 +1,4 @@
 ﻿using AutoMapper;
-using MassTransit.Configuration;
 using Microsoft.Extensions.Options;
 using MongoDB.Bson;
 using MongoDB.Driver;
@@ -63,8 +62,8 @@ namespace NotificationService.Services
                 List<Notification> notifications = await _notificationCollection.Find(s => true).ToListAsync();
                 var orderedNotfications = _sortHelper.ApplySort(notifications.AsQueryable(), requestParameters.OrderBy);
 
-                var count = await orderedNotfications.CountAsync();
-                var result = await orderedNotfications.Skip((requestParameters.PageNumber - 1 * requestParameters.PageSize)).ToListAsync();
+                var count = orderedNotfications.Count();
+                var result = orderedNotfications.Skip((requestParameters.PageNumber - 1 * requestParameters.PageSize)).ToList();
 
                 var pagedListNotifications = PagedList<Notification>.ToPagedList(result, count, requestParameters.PageNumber, requestParameters.PageSize);
                 return
@@ -103,8 +102,8 @@ namespace NotificationService.Services
                 var notificationsByUserId = await _notificationCollection.Find(n => n.SendToUserId == userId.ToString()).ToListAsync();
                 var sortedNotifications = _sortHelper.ApplySort(notificationsByUserId.AsQueryable(), requestParameters.OrderBy);
 
-                var count = await sortedNotifications.CountAsync();
-                var result = await sortedNotifications.Skip((requestParameters.PageNumber - 1) * requestParameters.PageSize).ToListAsync();
+                var count = sortedNotifications.Count();
+                var result = sortedNotifications.Skip((requestParameters.PageNumber - 1) * requestParameters.PageSize).ToList();
                 var pagedListNotifications = PagedList<Notification>.ToPagedList(result, count, requestParameters.PageNumber, requestParameters.PageSize);
                 return
                     (
