@@ -14,7 +14,7 @@ namespace NotificationService.Controllers
 {
     [Route("api/notifications")]
     [ApiController]
-    [Authorize("Admin")]
+    [Authorize(Roles = "Admin")]
     public class NotificationController : ControllerBase
     {
         private readonly INotificationSender _notificationSender;

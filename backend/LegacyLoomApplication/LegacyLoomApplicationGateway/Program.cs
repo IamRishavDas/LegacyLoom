@@ -9,7 +9,7 @@ var builder = WebApplication.CreateBuilder(args);
 // ocelot configuration
 builder.Services.AddJwtAuthenticationConfigurations();
 builder.Configuration.AddJsonFilesForOcelotConfig();
-builder.Services.AddOcelotConfig();
+builder.Services.AddOcelotConfig(builder.Configuration);
 
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
