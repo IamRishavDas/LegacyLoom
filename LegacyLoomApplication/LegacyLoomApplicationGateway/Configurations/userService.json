@@ -10,7 +10,7 @@
         }
       ],
       "UpstreamPathTemplate": "/gateway/api/users/{everything}",
-      "UpstreamHttpMethod": [ "GET", "POST", "PUT", "DELETE" ],
+      "UpstreamHttpMethod": [ "GET", "PUT", "DELETE" ],
 
       "RateLimitOptions": {
         "EnableRateLimiting": true,
@@ -27,6 +27,18 @@
         "AuthenticationProviderKey": "Bearer",
         "AllowedScopes": []
       }
+    },
+    {
+      "DownstreamPathTemplate": "/api/users",
+      "DownstreamScheme": "https",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "localhost",
+          "Port": 7160
+        }
+      ],
+      "UpstreamPathTemplate": "/gateway/api/users/{everything}",
+      "UpstreamHttpMethod": [ "POST" ]
     }
   ]
 }

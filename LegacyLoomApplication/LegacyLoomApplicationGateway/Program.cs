@@ -10,6 +10,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddJwtAuthenticationConfigurations();
 builder.Configuration.AddJsonFilesForOcelotConfig();
 builder.Services.AddOcelotConfig(builder.Configuration);
+builder.Services.AddCorsPolicy(builder.Configuration);
 
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
@@ -26,6 +27,8 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+app.UseCors(builder.Configuration["Cors:Policy"] ?? throw new ArgumentNullException("Cors:Policy not found!"));  
 
 app.UseAuthentication();
 app.UseAuthorization();
