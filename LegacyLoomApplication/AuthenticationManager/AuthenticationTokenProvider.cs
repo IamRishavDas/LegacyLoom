@@ -18,7 +18,7 @@ namespace AuthenticationManager
             _config = JsonConfigurationReader.ReadJwtConfigurationModelFromRoot();
         }
 
-        public (string, DateTime) GenerateJwtToken(string userName, string userRole, bool isTokenGeneratedWhileLogin = true)
+        public (string, DateTime) GenerateJwtToken(Guid userId, string userName, string userRole, bool isTokenGeneratedWhileLogin = true)
         {
             try
             {
@@ -29,6 +29,7 @@ namespace AuthenticationManager
                         {
                             new Claim(JwtRegisteredClaimNames.Name, userName),
                             new Claim(ClaimTypes.Role, userRole),
+                            new Claim("UserId", userId.ToString()),
                         }
                     );
 
