@@ -8,6 +8,6 @@ namespace AuthenticationManager.TokenProviderInterface
 {
     public interface ITokenProvider
     {
-        (string, DateTime) GenerateJwtToken(string userName, string userRole, bool isTokenGeneratedWhileLogin = true);
+        (string, DateTime) GenerateJwtToken(Guid userId, string userName, string userRole, bool isTokenGeneratedWhileLogin = true);
     }
 }

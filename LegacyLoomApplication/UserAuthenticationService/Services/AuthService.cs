@@ -80,7 +80,7 @@ namespace UserAuthenticationService.Services
                         (int)HttpStatusCode.BadRequest);
                 }
 
-                var (token, tokenExpiryTime) = _tokenProvider.GenerateJwtToken(user.Username, user.Role.ToString(), isTokenGeneratedWhileLogin: true);
+                var (token, tokenExpiryTime) = _tokenProvider.GenerateJwtToken(user.Id, user.Username, user.Role.ToString(), isTokenGeneratedWhileLogin: true);
                 var response = new UserLoginResponse
                 {
                     Id = user.Id,
@@ -124,7 +124,7 @@ namespace UserAuthenticationService.Services
                         (int)HttpStatusCode.BadRequest);
                 }
 
-                var (token, tokenExpiryTime) = _tokenProvider.GenerateJwtToken(user.Username, user.Role.ToString(), isTokenGeneratedWhileLogin: true);
+                var (token, tokenExpiryTime) = _tokenProvider.GenerateJwtToken(user.Id, user.Username, user.Role.ToString(), isTokenGeneratedWhileLogin: true);
                 var response = new UserLoginResponse
                 {
                     Id = user.Id,
@@ -152,7 +152,7 @@ namespace UserAuthenticationService.Services
         {
             try
             {
-                var (token, tokenExpiryTime) = _tokenProvider.GenerateJwtToken("", "", isTokenGeneratedWhileLogin: false);
+                var (token, tokenExpiryTime) = _tokenProvider.GenerateJwtToken(Guid.Empty, "", "", isTokenGeneratedWhileLogin: false);
                 var response = new UserLoginResponse
                 {
                     Id = Guid.Empty,

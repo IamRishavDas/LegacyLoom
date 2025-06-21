@@ -46,6 +46,9 @@ namespace NotificationService.Services
         {
             try
             {
+                ObjectId objectId;
+                bool isObjectId = ObjectId.TryParse(id, out objectId);
+                if (!isObjectId) return ServiceResponse<DeleteResult>.Failure($"Id: {id} is not an valid object id", (int)HttpStatusCode.BadRequest);
                 var result = await _notificationCollection.DeleteOneAsync(n => n.Id == id);
                 return ServiceResponse<DeleteResult>.SuccessResult(result, (int)HttpStatusCode.OK);
             }
@@ -86,6 +89,10 @@ namespace NotificationService.Services
         {
             try
             {
+                ObjectId objectId;
+                var isObjectId = ObjectId.TryParse(id, out objectId);
+                if (!isObjectId) return ServiceResponse<Notification?>.Failure($"Id: {id} is not an valid object id", (int)HttpStatusCode.BadRequest);
+
                 var notification = await _notificationCollection.Find(s => s.Id == id).FirstOrDefaultAsync();
                 return ServiceResponse<Notification?>.SuccessResult(notification, (int)HttpStatusCode.OK);
             }
