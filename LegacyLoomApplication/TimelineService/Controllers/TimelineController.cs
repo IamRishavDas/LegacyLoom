@@ -76,12 +76,22 @@ namespace TimelineService.Controllers
             return StatusCode(response.StatusCode, response);
         }
 
-        [HttpPatch("{timelineId}/private")]
+        [HttpPatch("{timelineId}/visibility:{visibility}")]
         [Authorize]
-        public async Task<ActionResult<ServiceResponse<ReplaceOneResult>>> SetTimelinePrivate([FromRoute]string timelineId)
+        public async Task<ActionResult<ServiceResponse<ReplaceOneResult>>> SetTimelineVisibility([FromRoute]string timelineId, [FromRoute]string visibility)
         {
             var userId = User.FindFirst("UserId")?.Value;
-            var response = await _timelineService.SetTimelinePrivate(timelineId, userIdRetrieviedFromToken: userId);
+            var response = await _timelineService.SetTimelineVisibility(timelineId, visibility, userIdRetrieviedFromToken: userId);
+            return StatusCode(response.StatusCode, response);
+        }
+
+        [HttpGet("shared/{userId}")]
+        [Authorize(Roles = "User,Admin,Moderator")]
+        public async Task<ActionResult<IEnumerable<Timeline>>> GetTimelinesSharedToUserId([FromRoute] Guid userId, TimelineRequestParameters timelineRequestParameters)
+        {
+            var userIdGotFromTokenHeader = User.FindFirst("UserId")?.Value;
+            var (response, metadata) = await _timelineService.GetSharedTimelinesForUserId(userId, userIdGotFromTokenHeader, timelineRequestParameters);
+            Response.Headers.Append(HeaderKey.PAGINATION, JsonSerializer.Serialize(metadata));
             return StatusCode(response.StatusCode, response);
         }
 
@@ -90,6 +100,39 @@ namespace TimelineService.Controllers
         public async Task<ActionResult<Timeline>> Create(CreateTimelineDTO createTimelineDTO)
         {
             var response = await _timelineService.Create(createTimelineDTO);
+            return StatusCode(response.StatusCode, response);
+        }
+
+        [HttpDelete("{timelineId}")]
+        [Authorize(Roles = "User")]
+        public async Task<IActionResult> DeleteTimeline([FromRoute]string timelineId)
+        {
+            var userId = User.FindFirst("UserId")?.Value;
+            var response = await _timelineService.DeleteTimeline(timelineId, userIdRetrieviedFromTokenHeader: userId);
+            return StatusCode(response.StatusCode, response);
+        }
+
+        [HttpDelete("permanent-delete: {timelineId}")]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> PermanentDeleteTimeline([FromRoute]string timelineId)
+        {
+            var response = await _timelineService.PermanentDeleteTimeline(timelineId);
+            return StatusCode(response.StatusCode, response);
+        }
+        
+        [HttpDelete("admin-delete: {timelineId}")]
+        [Authorize(Roles = "Admin,Moderator")]
+        public async Task<IActionResult> DeleteTimelineByAdmin([FromRoute]string timelineId)
+        {
+            var response = await _timelineService.DeleteTimelineByAdmin(timelineId);
+            return StatusCode(response.StatusCode, response);
+        }
+        
+        [HttpDelete("delete-all-user-deleted")]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> PermanentDeleteAllUserDeletedTimelines()
+        {
+            var response = await _timelineService.DeleteAllUserDeletedTimelines();
             return StatusCode(response.StatusCode, response);
         }
     }

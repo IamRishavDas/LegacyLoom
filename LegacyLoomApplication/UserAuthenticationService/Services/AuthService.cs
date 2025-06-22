@@ -86,6 +86,7 @@ namespace UserAuthenticationService.Services
                     Id = user.Id,
                     UserName = user.Username,
                     Email = user.Email,
+                    Role = user.Role.ToString(),
                     Token = token,
                     ExpiresIn = (int)tokenExpiryTime.Subtract(DateTime.Now).TotalSeconds
                 };
@@ -130,6 +131,7 @@ namespace UserAuthenticationService.Services
                     Id = user.Id,
                     UserName = user.Username,
                     Email = user.Email,
+                    Role = user.Role.ToString(),
                     Token = token,
                     ExpiresIn = (int)tokenExpiryTime.Subtract(DateTime.Now).TotalSeconds
                 };

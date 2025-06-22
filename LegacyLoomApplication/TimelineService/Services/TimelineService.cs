@@ -127,6 +127,7 @@ namespace TimelineService.Services
                     timeline.SharedWith = new List<string>();
                 timeline.SharedWith.AddRange(userGuids.Select(s => s.ToString()).ToList());
                 timeline.Visibility = TimelineVisibility.SHARED;
+                timeline.LastModified = DateTime.UtcNow;
 
                 ReplaceOneResult result = await _timelineCollection.ReplaceOneAsync(timeline => timeline.Id == timelineId, timeline);
                 return ServiceResponse<ReplaceOneResult>.SuccessResult(result, (int)HttpStatusCode.Created);
@@ -161,6 +162,7 @@ namespace TimelineService.Services
 
                 if (timeline.SharedWith.Count > 0 && timeline.Visibility == TimelineVisibility.PUBLIC)
                     timeline.Visibility = TimelineVisibility.SHARED;
+                timeline.LastModified = DateTime.UtcNow;
 
                 ReplaceOneResult result = await _timelineCollection.ReplaceOneAsync(timeline => timeline.Id == timelineId, timeline);
                 return ServiceResponse<ReplaceOneResult>.SuccessResult(result, (int)HttpStatusCode.Created);
@@ -171,7 +173,7 @@ namespace TimelineService.Services
             }
         }
 
-        public async Task<ServiceResponse<ReplaceOneResult>> SetTimelinePrivate(string timelineId, string? userIdRetrieviedFromToken)
+        public async Task<ServiceResponse<ReplaceOneResult>> SetTimelineVisibility(string timelineId, string visibility, string? userIdRetrieviedFromToken)
         {
             try
             {
@@ -184,10 +186,27 @@ namespace TimelineService.Services
                 if (timeline == null) return ServiceResponse<ReplaceOneResult>.Failure($"No such timeline found or deleted", (int)HttpStatusCode.NotFound);
                 if (timeline.CreatedBy != userIdRetrieviedFromToken)
                     return ServiceResponse<ReplaceOneResult>.Failure("You have no access to make this timeline private", (int)HttpStatusCode.Unauthorized);
-                if (timeline.Visibility == TimelineVisibility.PRIVATE)
-                    return ServiceResponse<ReplaceOneResult>.Failure("Timeline is already private", (int)HttpStatusCode.BadRequest);
 
-                timeline.Visibility = TimelineVisibility.PRIVATE;
+                var visibilityList = new List<string>()
+                { 
+                    TimelineVisibility.PRIVATE.ToString(), 
+                    TimelineVisibility.PUBLIC.ToString() 
+                };
+                var visibilityIndex = visibilityList.IndexOf(visibility);
+
+                if (visibilityIndex == -1)
+                    return ServiceResponse<ReplaceOneResult>.Failure("Invalid visibility parameter", (int)HttpStatusCode.BadRequest);
+
+                if(visibilityIndex == 0)
+                {
+                    timeline.Visibility = TimelineVisibility.PRIVATE;
+                } 
+                else if(visibilityIndex == 1)
+                {
+                    timeline.Visibility = TimelineVisibility.PUBLIC;
+                }
+                timeline.LastModified = DateTime.UtcNow;
+
                 ReplaceOneResult result = await _timelineCollection.ReplaceOneAsync(timeline => timeline.Id == timelineId, timeline);
                 return ServiceResponse<ReplaceOneResult>.SuccessResult(result, (int)HttpStatusCode.Created);
             }
@@ -241,10 +260,17 @@ namespace TimelineService.Services
             }
         }
 
-        public async Task<(ServiceResponse<IEnumerable<Timeline>>, MetaData)> GetSharedTimelinesForUserId(Guid userId, TimelineRequestParameters timelineRequestParameters)
+        public async Task<(ServiceResponse<IEnumerable<Timeline>>, MetaData)> GetSharedTimelinesForUserId(Guid userId, string? userIdRetrieviedFromTokenHeader, TimelineRequestParameters timelineRequestParameters)
         {
             try
             {
+                if (userIdRetrieviedFromTokenHeader == null || userId.ToString() != userIdRetrieviedFromTokenHeader)
+                    return
+                        (
+                            ServiceResponse<IEnumerable<Timeline>>.Failure("You are not authorized to get this details", (int)HttpStatusCode.Unauthorized),
+                            new MetaData()
+                        );
+
                 var timelinesByUser =
                     await _timelineCollection
                     .Find(timeline => timeline.SharedWith != null && timeline.SharedWith.Contains(userId.ToString()) && timeline.Visibility == TimelineVisibility.PUBLIC && !timeline.IsDeleted).ToListAsync();
@@ -303,6 +329,31 @@ namespace TimelineService.Services
                 timeline.IsDeleted = true;
                 timeline.SharedWith = new List<string>();
                 timeline.Visibility = TimelineVisibility.PRIVATE;
+                timeline.LastModified = DateTime.UtcNow;
+
+                await _timelineCollection.ReplaceOneAsync(timeline => timeline.Id == timelineId, timeline);
+                return ServiceResponse.SuccessResult((int)HttpStatusCode.OK, "Timeline deleted successfully");
+            }
+            catch (Exception ex)
+            {
+                return ServiceResponse.Failure("Error while deleting the timeline, please try again later", new List<string>() { ex.Message }, (int)HttpStatusCode.InternalServerError);
+            }
+        }
+
+        public async Task<ServiceResponse> DeleteTimelineByAdmin(string timelineId)
+        {
+            try
+            {
+                if (!ObjectId.TryParse(timelineId, out ObjectId objectId))
+                    return ServiceResponse.Failure($"Invalid timeline id: {timelineId}", (int)HttpStatusCode.BadRequest);
+
+                var timeline = await _timelineCollection.Find(timeline => timeline.Id == timelineId && !timeline.IsDeleted).FirstOrDefaultAsync();
+                if (timeline == null) return ServiceResponse.Failure($"Requested timeline is not found or already deleted, id: {timelineId}", (int)HttpStatusCode.NotFound);
+
+                timeline.IsDeleted = true;
+                timeline.SharedWith = new List<string>();
+                timeline.Visibility = TimelineVisibility.PRIVATE;
+                timeline.LastModified = DateTime.UtcNow;
 
                 await _timelineCollection.ReplaceOneAsync(timeline => timeline.Id == timelineId, timeline);
                 return ServiceResponse.SuccessResult((int)HttpStatusCode.OK, "Timeline deleted successfully");
@@ -332,16 +383,18 @@ namespace TimelineService.Services
             }
         }
 
-        public async Task<ServiceResponse> DeleteAllUserDeletedTimelines()
+        public async Task<ServiceResponse<DeleteResult>> DeleteAllUserDeletedTimelines()
         {
             try
             {
-                await _timelineCollection.DeleteManyAsync(timeline => timeline.IsDeleted);
-                return ServiceResponse.SuccessResult((int)HttpStatusCode.OK, "Timelines deleted permanently from db");
+                var deleteResult = await _timelineCollection.DeleteManyAsync(timeline => timeline.IsDeleted);
+                if (deleteResult == null)
+                    return ServiceResponse<DeleteResult>.Failure("No timeline is there for delete", (int)HttpStatusCode.NotFound);
+                return ServiceResponse<DeleteResult>.SuccessResult(deleteResult, (int)HttpStatusCode.OK, "Timelines deleted permanently from db");
             }
             catch (Exception ex)
             {
-                return ServiceResponse.Failure("Error while deleting try after some time", new List<string>() {ex.Message}, (int)HttpStatusCode.InternalServerError);
+                return ServiceResponse<DeleteResult>.Failure("Error while deleting try after some time", new List<string>() {ex.Message}, (int)HttpStatusCode.InternalServerError);
             }
         }
     }
