@@ -11,7 +11,9 @@ namespace TimelineService.MappingConfiguration
             CreateMap<Image, ImageDTO>();
             CreateMap<Medias, MediasDTO>();
             CreateMap<Story, StoryDTO>();
-            CreateMap<Timeline, TimelineDTO>();
+            CreateMap<Timeline, TimelineDTO>().ForMember(dest => dest.Visibility,
+                    s => s.MapFrom(src => src.Visibility.ToString())
+                );
         }
     }
 }

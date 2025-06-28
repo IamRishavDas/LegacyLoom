@@ -1,8 +1,5 @@
 ﻿using AutoMapper;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using MongoDB.Driver;
-using ServiceResponseShared;
 using TimelineService.Models;
 using TimelineService.Services;
 
@@ -21,8 +18,8 @@ namespace TimelineService.Controllers
             _mapper = mapper;
         }
 
-        [HttpPatch("story")]
-        public async Task<ActionResult<ServiceResponse<ReplaceOneResult>>> UpdateStoryInTimeline([FromRoute]string timelineId, [FromBody]Story story)
+        [HttpPut("story")]
+        public async Task<IActionResult> UpdateStoryInTimeline([FromRoute]string timelineId, [FromBody]Story story)
         {
             var userId = User.FindFirst("UserId")?.Value;
             var response = await _storyService.UpdateStoryInTimeline(timelineId, story, userIdRetrieviedFromTokenHeader: userId);

@@ -67,18 +67,18 @@ namespace TimelineService.Controllers
             return StatusCode(respoonse.StatusCode, respoonse);
         }
         
-        [HttpPatch("{timelineId}/share")]
+        [HttpPut("{timelineId}/share")]
         [Authorize(Roles = "Admin")]
-        public async Task<ActionResult<ServiceResponse<ReplaceOneResult>>> ShareTimeline([FromRoute]string timelineId, [FromBody]List<Guid> userGuids)
+        public async Task<IActionResult> ShareTimeline([FromRoute]string timelineId, [FromBody]List<Guid> userGuids)
         {
             var userId = User.FindFirst("UserId")?.Value;
             var response = await _timelineService.ShareTimeline(timelineId, userGuids, userIdRetrieviedFromToken: userId);
             return StatusCode(response.StatusCode, response);
         }
 
-        [HttpPatch("{timelineId}/visibility:{visibility}")]
+        [HttpPut("{timelineId}/visibility:{visibility}")]
         [Authorize]
-        public async Task<ActionResult<ServiceResponse<ReplaceOneResult>>> SetTimelineVisibility([FromRoute]string timelineId, [FromRoute]string visibility)
+        public async Task<IActionResult> SetTimelineVisibility([FromRoute]string timelineId, [FromRoute]string visibility)
         {
             var userId = User.FindFirst("UserId")?.Value;
             var response = await _timelineService.SetTimelineVisibility(timelineId, visibility, userIdRetrieviedFromToken: userId);
@@ -96,10 +96,11 @@ namespace TimelineService.Controllers
         }
 
         [HttpPost]
-        [AllowAnonymous]
+        [Authorize(Roles = "User")]
         public async Task<ActionResult<Timeline>> Create(CreateTimelineDTO createTimelineDTO)
         {
-            var response = await _timelineService.Create(createTimelineDTO);
+            var userId = User.FindFirst("UserId")?.Value;
+            var response = await _timelineService.Create(createdBy: userId, createTimelineDTO);
             return StatusCode(response.StatusCode, response);
         }
 
@@ -112,7 +113,7 @@ namespace TimelineService.Controllers
             return StatusCode(response.StatusCode, response);
         }
 
-        [HttpDelete("permanent-delete: {timelineId}")]
+        [HttpDelete("permanent-delete:{timelineId}")]
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> PermanentDeleteTimeline([FromRoute]string timelineId)
         {
@@ -120,7 +121,7 @@ namespace TimelineService.Controllers
             return StatusCode(response.StatusCode, response);
         }
         
-        [HttpDelete("admin-delete: {timelineId}")]
+        [HttpDelete("admin-delete:{timelineId}")]
         [Authorize(Roles = "Admin,Moderator")]
         public async Task<IActionResult> DeleteTimelineByAdmin([FromRoute]string timelineId)
         {

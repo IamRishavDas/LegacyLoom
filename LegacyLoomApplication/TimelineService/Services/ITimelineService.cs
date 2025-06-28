@@ -9,7 +9,7 @@ namespace TimelineService.Services
 {
     public interface ITimelineService
     {
-        Task<ServiceResponse<Timeline>> Create(CreateTimelineDTO createTimelineDTO);
+        Task<ServiceResponse<Timeline>> Create(string? createdBy, CreateTimelineDTO createTimelineDTO);/*createdBy is Guid*/
         Task<(ServiceResponse<IEnumerable<Timeline>>, MetaData)> GetAll(TimelineRequestParameters timelineRequestParameters);
         Task<ServiceResponse<Timeline>> GetById(string id);
         Task<(ServiceResponse<IEnumerable<Timeline>>, MetaData)> GetByCreatedBy(Guid userId, TimelineRequestParameters timelineRequestParameters);

@@ -125,6 +125,7 @@ namespace TimelineService.Services
 
                 if (timeline.SharedWith == null)
                     timeline.SharedWith = new List<string>();
+
                 timeline.SharedWith.AddRange(userGuids.Select(s => s.ToString()).ToList());
                 timeline.Visibility = TimelineVisibility.SHARED;
                 timeline.LastModified = DateTime.UtcNow;
@@ -294,14 +295,18 @@ namespace TimelineService.Services
             }
         }
 
-        public async Task<ServiceResponse<Timeline>> Create(CreateTimelineDTO createTimelineDTO)
+        public async Task<ServiceResponse<Timeline>> Create(string? createdBy, CreateTimelineDTO createTimelineDTO)
         {
             try
             {
+                if(createdBy == null || !ObjectId.TryParse(createdBy, out ObjectId userId))
+                {
+                    return ServiceResponse<Timeline>.Failure("Unauthorized to perform this operation", (int)HttpStatusCode.Unauthorized);
+                }
                 var timeline = new Timeline()
                 {
                     Id = ObjectId.GenerateNewId().ToString(),
-                    CreatedBy = createTimelineDTO.CreatedBy.ToString(),
+                    CreatedBy = createdBy,
                     Story = createTimelineDTO.Story
                 };
                 await _timelineCollection.InsertOneAsync(timeline);

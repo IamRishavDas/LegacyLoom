@@ -6,10 +6,7 @@ namespace TimelineService.DTOs
     public record CreateTimelineDTO
     (
         [Required]
-        Story Story,
-
-        [Required(ErrorMessage = "User id is required")]
-        Guid CreatedBy
+        Story Story
     ){ }
 
     public record TimelineDTO

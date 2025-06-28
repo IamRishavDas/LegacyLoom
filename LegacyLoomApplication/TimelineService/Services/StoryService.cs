@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Options;
+﻿using AutoMapper;
+using Microsoft.Extensions.Options;
 using MongoDB.Bson;
 using MongoDB.Driver;
 using ServiceResponseShared;
@@ -11,11 +12,13 @@ namespace TimelineService.Services
     public class StoryService : IStoryService
     {
         private readonly IMongoCollection<Timeline> _timelineCollection;
+        private readonly IMapper _mapper;
 
-        public StoryService(IOptions<TimelineDbSettings> timelineDbSettings, IMongoClient mongoClient)
+        public StoryService(IOptions<TimelineDbSettings> timelineDbSettings, IMongoClient mongoClient, IMapper mapper)
         {
             var db = mongoClient.GetDatabase(timelineDbSettings.Value.DatabaseName);
             _timelineCollection = db.GetCollection<Timeline>(timelineDbSettings.Value.TimelinesCollectionName);
+            _mapper = mapper;
         }
 
         public async Task<ServiceResponse<ReplaceOneResult>> UpdateStoryInTimeline(string timelineId, Story story, string? userIdRetrieviedFromTokenHeader)
