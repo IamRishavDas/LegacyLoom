@@ -1,11 +1,10 @@
 ﻿using AutoMapper;
-using Microsoft.Extensions.Options;
 using MongoDB.Bson;
 using MongoDB.Driver;
 using ServiceResponseShared;
 using System.Net;
 using TimelineService.Models;
-using TimelineService.Settings;
+using TimelineService.MongoRepository;
 
 namespace TimelineService.Services
 {
@@ -14,10 +13,9 @@ namespace TimelineService.Services
         private readonly IMongoCollection<Timeline> _timelineCollection;
         private readonly IMapper _mapper;
 
-        public StoryService(IOptions<TimelineDbSettings> timelineDbSettings, IMongoClient mongoClient, IMapper mapper)
+        public StoryService(AppMongoRepository mongoRepository, IMapper mapper)
         {
-            var db = mongoClient.GetDatabase(timelineDbSettings.Value.DatabaseName);
-            _timelineCollection = db.GetCollection<Timeline>(timelineDbSettings.Value.TimelinesCollectionName);
+            _timelineCollection = mongoRepository.GetTimelineCollectionContext();
             _mapper = mapper;
         }
 

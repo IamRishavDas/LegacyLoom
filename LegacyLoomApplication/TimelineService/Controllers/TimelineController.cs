@@ -1,9 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using MongoDB.Driver;
-using RequestFeatureShared;
 using RequestFeatureShared.Constants;
-using ServiceResponseShared;
 using System.Text.Json;
 using TimelineService.DTOs;
 using TimelineService.Models;
@@ -25,9 +22,19 @@ namespace TimelineService.Controllers
 
         [HttpGet]
         [Authorize(Roles = "Admin")]
-        public async Task<ActionResult<IEnumerable<Timeline>>> GetAll([FromQuery] TimelineRequestParameters timelineRequestParameters)
+        public async Task<ActionResult<IEnumerable<TimelineDTO>>> GetAll([FromQuery] TimelineRequestParameters timelineRequestParameters)
         {
             var (serviceResponseOfPagedList, metadata) = await _timelineService.GetAll(timelineRequestParameters);
+            Response.Headers.Append(HeaderKey.PAGINATION, JsonSerializer.Serialize(metadata));
+            return StatusCode(serviceResponseOfPagedList.StatusCode, serviceResponseOfPagedList);
+        }
+
+        [HttpGet("my-timelines")]
+        [Authorize(Roles = "User")]
+        public async Task<ActionResult<IEnumerable<TimelineDTO>>> GetCreatorTimelines([FromQuery] TimelineRequestParameters timelineRequestParameters)
+        {
+            var userId = User.FindFirst("UserId")?.Value;
+            var (serviceResponseOfPagedList, metadata) = await _timelineService.GetCreatorTimelines(userId, timelineRequestParameters);
             Response.Headers.Append(HeaderKey.PAGINATION, JsonSerializer.Serialize(metadata));
             return StatusCode(serviceResponseOfPagedList.StatusCode, serviceResponseOfPagedList);
         }
@@ -68,7 +75,7 @@ namespace TimelineService.Controllers
         }
         
         [HttpPut("{timelineId}/share")]
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "User")]
         public async Task<IActionResult> ShareTimeline([FromRoute]string timelineId, [FromBody]List<Guid> userGuids)
         {
             var userId = User.FindFirst("UserId")?.Value;

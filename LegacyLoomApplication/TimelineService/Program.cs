@@ -5,6 +5,7 @@ using RequestFeatureShared.SortHelper;
 using TimelineService.Extensions;
 using TimelineService.MappingConfiguration;
 using TimelineService.Models;
+using TimelineService.MongoRepository;
 using TimelineService.Services;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -14,6 +15,7 @@ builder.Services.AddJwtAuthenticationConfigurations();
 builder.Services.AddAutoMapper(typeof(ApplicationMappingConfig));
 builder.Services.LoadMongoDbSettings(builder.Configuration);
 builder.Services.CreateMongoClientInstance(builder.Configuration);
+builder.Services.AddScoped<AppMongoRepository>();
 builder.Services.AddSingleton<ISortHelper<Timeline>, SortHelper<Timeline>>();
 builder.Services.AddScoped<ITimelineService, TimelineService.Services.TimelineService>();
 builder.Services.AddScoped<IStoryService, StoryService>();

@@ -9,14 +9,14 @@ namespace TimelineService.DTOs
         Story Story
     ){ }
 
-    public record TimelineDTO
-    (
-        string Id,
-        StoryDTO StoryDTO,
-        Guid CreatedBy,
-        List<Guid>? SharedWith,
-        string Visibility,
-        DateTime CreatedAt,
-        DateTime LastModified
-    ) { }
+    public class TimelineDTO
+    {
+        public required string Id {get; set;}
+        public required StoryDTO StoryDTO { get; set; }
+        public Guid CreatedBy {get; set;}
+        public List<Guid>? SharedWith {get; set;}
+        public required string Visibility {get; set;}
+        public DateTime CreatedAt {get; set;}
+        public DateTime LastModified {get; set;}
+    }
 }
