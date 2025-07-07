@@ -32,9 +32,9 @@ namespace TimelineService.MongoRepository
             return timelineCollectionContext;
         }
 
-        public IMongoCollection<Timeline> GetTimelineCollectionContext()
+        public async Task<IMongoCollection<Timeline>> GetTimelineCollectionContext()
         {
-            return _timelineCollection;
+            return await AddIndex(this._timelineCollection);
         }
     }
 }

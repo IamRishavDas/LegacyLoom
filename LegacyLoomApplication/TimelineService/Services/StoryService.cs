@@ -10,12 +10,12 @@ namespace TimelineService.Services
 {
     public class StoryService : IStoryService
     {
-        private readonly IMongoCollection<Timeline> _timelineCollection;
+        private readonly AppMongoRepository _mongoRepository;
         private readonly IMapper _mapper;
 
         public StoryService(AppMongoRepository mongoRepository, IMapper mapper)
         {
-            _timelineCollection = mongoRepository.GetTimelineCollectionContext();
+            _mongoRepository = mongoRepository;
             _mapper = mapper;
         }
 
@@ -26,6 +26,7 @@ namespace TimelineService.Services
                 if (ObjectId.TryParse(timelineId, out ObjectId objectId))
                     return ServiceResponse<ReplaceOneResult>.Failure($"Not a valid timeline id: {timelineId}", (int)HttpStatusCode.BadRequest);
 
+                var _timelineCollection = await _mongoRepository.GetTimelineCollectionContext();
                 var timeline = await _timelineCollection.Find(timeline => timeline.Id == timelineId && !timeline.IsDeleted).FirstOrDefaultAsync();
 
                 if (timeline == null)

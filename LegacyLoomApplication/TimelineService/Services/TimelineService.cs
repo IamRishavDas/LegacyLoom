@@ -15,13 +15,13 @@ namespace TimelineService.Services
 {
     public class TimelineService : ITimelineService
     {
-        private readonly IMongoCollection<Timeline> _timelineCollection;
+        private readonly AppMongoRepository _mongoRepository;
         private readonly ISortHelper<Timeline> _sortHelper;
         private readonly IMapper _mapper;
 
         public TimelineService(AppMongoRepository mongoRepository, IMapper mapper, ISortHelper<Timeline> sortHelper)
         {
-            _timelineCollection = mongoRepository.GetTimelineCollectionContext();
+            _mongoRepository = mongoRepository;
             _sortHelper = sortHelper;
             _mapper = mapper;
         }
@@ -30,6 +30,7 @@ namespace TimelineService.Services
         {
             try
             {
+                var _timelineCollection = await _mongoRepository.GetTimelineCollectionContext();
                 var timelines = await _timelineCollection.Find(s => !s.IsDeleted && s.Visibility != TimelineVisibility.PRIVATE).ToListAsync();
                 var orderedTimelines = _sortHelper.ApplySort(timelines.AsQueryable<Timeline>(), timelineRequestParameters.OrderBy);
 
@@ -68,6 +69,7 @@ namespace TimelineService.Services
                         );
                 }
 
+                var _timelineCollection = await _mongoRepository.GetTimelineCollectionContext();
                 var timelines = await _timelineCollection.Find(s => !s.IsDeleted && s.CreatedBy == userId).ToListAsync();
                 var orderedTimelines = _sortHelper.ApplySort(timelines.AsQueryable<Timeline>(), timelineRequestParameters.OrderBy);
 
@@ -97,6 +99,7 @@ namespace TimelineService.Services
         {
             try
             {
+                var _timelineCollection = await _mongoRepository.GetTimelineCollectionContext();
                 var timelines = await _timelineCollection.Find(timeline => timeline.Visibility == TimelineVisibility.PUBLIC && !timeline.IsDeleted).ToListAsync();
                 var orderedTimelines = _sortHelper.ApplySort(timelines.AsQueryable<Timeline>(), timelineRequestParameters.OrderBy);
 
@@ -124,6 +127,7 @@ namespace TimelineService.Services
         {
             try
             {
+                var _timelineCollection = await _mongoRepository.GetTimelineCollectionContext();
                 var timelines = await _timelineCollection.Find(timeline => timeline.Visibility == TimelineVisibility.SHARED && !timeline.IsDeleted).ToListAsync();
                 var orderedTimelines = _sortHelper.ApplySort(timelines.AsQueryable<Timeline>(), timelineRequestParameters.OrderBy);
 
@@ -151,6 +155,7 @@ namespace TimelineService.Services
         {
             try
             {
+                var _timelineCollection = await _mongoRepository.GetTimelineCollectionContext();
                 if (!ObjectId.TryParse(timelineId, out ObjectId objectId))
                     return ServiceResponse<ReplaceOneResult>.Failure($"TimelineId: {timelineId} is not valid object id", (int)HttpStatusCode.BadRequest);
                 if (userIdRetrieviedFromToken == null) return ServiceResponse<ReplaceOneResult>.Failure("You have no priviledge to do that", (int)HttpStatusCode.Unauthorized);
@@ -185,6 +190,7 @@ namespace TimelineService.Services
                     return ServiceResponse<ReplaceOneResult>.Failure($"TimelineId: {timelineId} is not valid object id", (int)HttpStatusCode.BadRequest);
                 if (userIdRetrieviedFromToken == null) return ServiceResponse<ReplaceOneResult>.Failure("You have no priviledge to do that", (int)HttpStatusCode.Unauthorized);
 
+                var _timelineCollection = await _mongoRepository.GetTimelineCollectionContext();
                 var timeline = await _timelineCollection.Find(timeline => timeline.Id == timelineId && !timeline.IsDeleted).FirstOrDefaultAsync();
 
                 if (timeline == null) return ServiceResponse<ReplaceOneResult>.Failure($"No such timeline found or deleted", (int)HttpStatusCode.NotFound);
@@ -220,6 +226,7 @@ namespace TimelineService.Services
                     return ServiceResponse<ReplaceOneResult>.Failure($"TimelineId: {timelineId} is not valid object id", (int)HttpStatusCode.BadRequest);
                 if (userIdRetrieviedFromToken == null) return ServiceResponse<ReplaceOneResult>.Failure("You have no priviledge to do that", (int)HttpStatusCode.Unauthorized);
 
+                var _timelineCollection = await _mongoRepository.GetTimelineCollectionContext();
                 var timeline = await _timelineCollection.Find(timeline => timeline.Id == timelineId && !timeline.IsDeleted).FirstOrDefaultAsync();
 
                 if (timeline == null) return ServiceResponse<ReplaceOneResult>.Failure($"No such timeline found or deleted", (int)HttpStatusCode.NotFound);
@@ -263,6 +270,7 @@ namespace TimelineService.Services
                 bool isObjectId = ObjectId.TryParse(id, out objectId);
                 if (!isObjectId) return ServiceResponse<Timeline>.Failure($"Invalid object id: {id}", (int)HttpStatusCode.BadRequest);
 
+                var _timelineCollection = await _mongoRepository.GetTimelineCollectionContext();
                 var timeline = await _timelineCollection.Find(s => s.Id == id && s.Visibility == TimelineVisibility.PUBLIC && !s.IsDeleted).FirstOrDefaultAsync();
 
                 if (timeline == null) return ServiceResponse<Timeline>.Failure($"Timeline with id: {id} not found", (int)HttpStatusCode.NotFound);
@@ -278,6 +286,7 @@ namespace TimelineService.Services
         {
             try
             {
+                var _timelineCollection = await _mongoRepository.GetTimelineCollectionContext();
                 var timelinesByUser = await _timelineCollection.Find(timeline => timeline.CreatedBy == userId.ToString() && timeline.Visibility != TimelineVisibility.PRIVATE && !timeline.IsDeleted).ToListAsync();
                 var orderedTimlinesByUserId = _sortHelper.ApplySort(timelinesByUser.AsQueryable(), timelineRequestParameters.OrderBy).ToList();
                 var count = timelinesByUser.Count;
@@ -310,6 +319,7 @@ namespace TimelineService.Services
                             new MetaData()
                         );
 
+                var _timelineCollection = await _mongoRepository.GetTimelineCollectionContext();
                 var timelinesByUser =
                     await _timelineCollection
                     .Find(timeline => timeline.SharedWith != null && timeline.SharedWith.Contains(userId.ToString()) && timeline.Visibility == TimelineVisibility.PUBLIC && !timeline.IsDeleted).ToListAsync();
@@ -341,6 +351,9 @@ namespace TimelineService.Services
                 {
                     return ServiceResponse<Timeline>.Failure("Unauthorized to perform this operation", (int)HttpStatusCode.Unauthorized);
                 }
+
+                var _timelineCollection = await _mongoRepository.GetTimelineCollectionContext();
+
                 var timeline = new Timeline()
                 {
                     Id = ObjectId.GenerateNewId().ToString(),
@@ -363,6 +376,7 @@ namespace TimelineService.Services
                 if (!ObjectId.TryParse(timelineId, out ObjectId objectId))
                     return ServiceResponse.Failure($"Invalid timeline id: {timelineId}", (int)HttpStatusCode.BadRequest);
 
+                var _timelineCollection = await _mongoRepository.GetTimelineCollectionContext();
                 var timeline = await _timelineCollection.Find(timeline => timeline.Id == timelineId && !timeline.IsDeleted).FirstOrDefaultAsync();
                 if (timeline == null) return ServiceResponse.Failure($"Requested timeline is not found or already deleted, id: {timelineId}", (int)HttpStatusCode.NotFound);
 
@@ -390,6 +404,7 @@ namespace TimelineService.Services
                 if (!ObjectId.TryParse(timelineId, out ObjectId objectId))
                     return ServiceResponse.Failure($"Invalid timeline id: {timelineId}", (int)HttpStatusCode.BadRequest);
 
+                var _timelineCollection = await _mongoRepository.GetTimelineCollectionContext();
                 var timeline = await _timelineCollection.Find(timeline => timeline.Id == timelineId && !timeline.IsDeleted).FirstOrDefaultAsync();
                 if (timeline == null) return ServiceResponse.Failure($"Requested timeline is not found or already deleted, id: {timelineId}", (int)HttpStatusCode.NotFound);
 
@@ -414,6 +429,7 @@ namespace TimelineService.Services
                 if (!ObjectId.TryParse(timelineId, out ObjectId objectId))
                     return ServiceResponse.Failure($"Invalid timeline id: {timelineId}", (int)HttpStatusCode.BadRequest);
 
+                var _timelineCollection = await _mongoRepository.GetTimelineCollectionContext();
                 var timeline = await _timelineCollection.Find(timeline => timeline.Id == timelineId).FirstOrDefaultAsync();
                 if (timeline == null) return ServiceResponse.Failure($"Requested timeline is not found or already deleted, id: {timelineId}", (int)HttpStatusCode.NotFound);
 
@@ -430,6 +446,7 @@ namespace TimelineService.Services
         {
             try
             {
+                var _timelineCollection = await _mongoRepository.GetTimelineCollectionContext();
                 var deleteResult = await _timelineCollection.DeleteManyAsync(timeline => timeline.IsDeleted);
                 if (deleteResult == null)
                     return ServiceResponse<DeleteResult>.Failure("No timeline is there for delete", (int)HttpStatusCode.NotFound);

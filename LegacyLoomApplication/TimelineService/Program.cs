@@ -15,7 +15,7 @@ builder.Services.AddJwtAuthenticationConfigurations();
 builder.Services.AddAutoMapper(typeof(ApplicationMappingConfig));
 builder.Services.LoadMongoDbSettings(builder.Configuration);
 builder.Services.CreateMongoClientInstance(builder.Configuration);
-builder.Services.AddScoped<AppMongoRepository>();
+builder.Services.AddSingleton<AppMongoRepository>();
 builder.Services.AddSingleton<ISortHelper<Timeline>, SortHelper<Timeline>>();
 builder.Services.AddScoped<ITimelineService, TimelineService.Services.TimelineService>();
 builder.Services.AddScoped<IStoryService, StoryService>();
