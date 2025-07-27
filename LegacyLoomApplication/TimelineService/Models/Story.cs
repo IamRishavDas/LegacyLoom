@@ -38,6 +38,6 @@ namespace TimelineService.Models
 
         [Required(ErrorMessage = "Image size is required")]
         [Range(minimum: 1, maximum: int.MaxValue, ErrorMessage = "Image size should be in the range of 1 to 2,147,483,647")]
-        public required int Size { get; set; }
+        public required string Size { get; set; }
     }
 }

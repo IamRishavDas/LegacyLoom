@@ -17,13 +17,15 @@ namespace TimelineService.Services
     {
         private readonly AppMongoRepository _mongoRepository;
         private readonly ISortHelper<Timeline> _sortHelper;
+        private readonly IImageUploadService _imageUploadService;
         private readonly IMapper _mapper;
 
-        public TimelineService(AppMongoRepository mongoRepository, IMapper mapper, ISortHelper<Timeline> sortHelper)
+        public TimelineService(AppMongoRepository mongoRepository, IMapper mapper, ISortHelper<Timeline> sortHelper, IImageUploadService imageUploadService)
         {
             _mongoRepository = mongoRepository;
             _sortHelper = sortHelper;
             _mapper = mapper;
+            _imageUploadService = imageUploadService;
         }
 
         public async Task<(ServiceResponse<IEnumerable<TimelineDTO>>, MetaData)> GetAll(TimelineRequestParameters timelineRequestParameters)
@@ -95,7 +97,7 @@ namespace TimelineService.Services
             }
         }
 
-        public async Task<(ServiceResponse<IEnumerable<Timeline>>, MetaData)> GetAllPublicTimelines(TimelineRequestParameters timelineRequestParameters)
+        public async Task<(ServiceResponse<IEnumerable<TimelineDTO>>, MetaData)> GetAllPublicTimelines(TimelineRequestParameters timelineRequestParameters)
         {
             try
             {
@@ -109,7 +111,11 @@ namespace TimelineService.Services
                 var pagedListTimelines = PagedList<Timeline>.ToPagedList(result, count, timelineRequestParameters.PageNumber, timelineRequestParameters.PageSize);
                 return
                     (
-                        ServiceResponse<IEnumerable<Timeline>>.SuccessResult(_mapper.Map<IEnumerable<Timeline>>(pagedListTimelines), (int)HttpStatusCode.OK),
+                        ServiceResponse<IEnumerable<TimelineDTO>>.SuccessResult
+                        (
+                            _mapper.Map<IEnumerable<TimelineDTO>>(pagedListTimelines),
+                            (int)HttpStatusCode.OK
+                        ),
                         pagedListTimelines.MetaData
                     );
             }
@@ -117,13 +123,13 @@ namespace TimelineService.Services
             {
                 return
                     (
-                        ServiceResponse<IEnumerable<Timeline>>.Failure("Error while retireving the timeline details", new List<string>() { ex.Message }, (int)HttpStatusCode.InternalServerError),
+                        ServiceResponse<IEnumerable<TimelineDTO>>.Failure("Error while retireving the timeline details", new List<string>() { ex.Message }, (int)HttpStatusCode.InternalServerError),
                         new MetaData()
                     );
             }
         }
 
-        public async Task<(ServiceResponse<IEnumerable<Timeline>>, MetaData)> GetAllSharedTimelines(TimelineRequestParameters timelineRequestParameters)
+        public async Task<(ServiceResponse<IEnumerable<TimelineDTO>>, MetaData)> GetAllSharedTimelines(TimelineRequestParameters timelineRequestParameters)
         {
             try
             {
@@ -137,7 +143,11 @@ namespace TimelineService.Services
                 var pagedListTimelines = PagedList<Timeline>.ToPagedList(result, count, timelineRequestParameters.PageNumber, timelineRequestParameters.PageSize);
                 return
                     (
-                        ServiceResponse<IEnumerable<Timeline>>.SuccessResult(_mapper.Map<IEnumerable<Timeline>>(pagedListTimelines), (int)HttpStatusCode.OK),
+                        ServiceResponse<IEnumerable<TimelineDTO>>.SuccessResult
+                        (
+                            _mapper.Map<IEnumerable<TimelineDTO>>(pagedListTimelines),
+                            (int)HttpStatusCode.OK
+                        ),
                         pagedListTimelines.MetaData
                     );
             }
@@ -145,7 +155,7 @@ namespace TimelineService.Services
             {
                 return
                     (
-                        ServiceResponse<IEnumerable<Timeline>>.Failure("Error while retireving the timeline details", new List<string>() { ex.Message }, (int)HttpStatusCode.InternalServerError),
+                        ServiceResponse<IEnumerable<TimelineDTO>>.Failure("Error while retireving the timeline details", new List<string>() { ex.Message }, (int)HttpStatusCode.InternalServerError),
                         new MetaData()
                     );
             }
@@ -205,8 +215,15 @@ namespace TimelineService.Services
                     timeline.SharedWith.Remove(userId.ToString());
                 }
 
-                if (timeline.SharedWith.Count > 0 && timeline.Visibility == TimelineVisibility.PUBLIC)
+                if (timeline.SharedWith.Count == 0)
+                {
+                    timeline.Visibility = TimelineVisibility.PUBLIC;
+                }
+                else if (timeline.SharedWith.Count > 0 && timeline.Visibility == TimelineVisibility.PUBLIC)
+                {
                     timeline.Visibility = TimelineVisibility.SHARED;
+                }
+                    
                 timeline.LastModified = DateTime.UtcNow;
 
                 ReplaceOneResult result = await _timelineCollection.ReplaceOneAsync(timeline => timeline.Id == timelineId, timeline);
@@ -262,27 +279,27 @@ namespace TimelineService.Services
             }
         }
 
-        public async Task<ServiceResponse<Timeline>> GetById(string id)
+        public async Task<ServiceResponse<TimelineDTO>> GetById(string id)
         {
             try
             {
                 ObjectId objectId;
                 bool isObjectId = ObjectId.TryParse(id, out objectId);
-                if (!isObjectId) return ServiceResponse<Timeline>.Failure($"Invalid object id: {id}", (int)HttpStatusCode.BadRequest);
+                if (!isObjectId) return ServiceResponse<TimelineDTO>.Failure($"Invalid object id: {id}", (int)HttpStatusCode.BadRequest);
 
                 var _timelineCollection = await _mongoRepository.GetTimelineCollectionContext();
                 var timeline = await _timelineCollection.Find(s => s.Id == id && s.Visibility == TimelineVisibility.PUBLIC && !s.IsDeleted).FirstOrDefaultAsync();
 
-                if (timeline == null) return ServiceResponse<Timeline>.Failure($"Timeline with id: {id} not found", (int)HttpStatusCode.NotFound);
-                return ServiceResponse<Timeline>.SuccessResult(timeline, (int)HttpStatusCode.OK);
+                if (timeline == null) return ServiceResponse<TimelineDTO>.Failure($"Timeline with id: {id} not found", (int)HttpStatusCode.NotFound);
+                return ServiceResponse<TimelineDTO>.SuccessResult(_mapper.Map<TimelineDTO>(timeline), (int)HttpStatusCode.OK);
             }
             catch (Exception ex)
             {
-                return ServiceResponse<Timeline>.Failure("Error while retrieving the Timeline", new List<string>() { ex.Message }, (int)HttpStatusCode.InternalServerError);
+                return ServiceResponse<TimelineDTO>.Failure("Error while retrieving the Timeline", new List<string>() { ex.Message }, (int)HttpStatusCode.InternalServerError);
             }
         }
 
-        public async Task<(ServiceResponse<IEnumerable<Timeline>>, MetaData)> GetByCreatedBy(Guid userId, TimelineRequestParameters timelineRequestParameters)
+        public async Task<(ServiceResponse<IEnumerable<TimelineDTO>>, MetaData)> GetByCreatedBy(Guid userId, TimelineRequestParameters timelineRequestParameters)
         {
             try
             {
@@ -294,7 +311,7 @@ namespace TimelineService.Services
                 var pagedList = PagedList<Timeline>.ToPagedList(result, count, timelineRequestParameters.PageNumber, timelineRequestParameters.PageSize);
                 return
                     (
-                        ServiceResponse<IEnumerable<Timeline>>.SuccessResult(_mapper.Map<IEnumerable<Timeline>>(pagedList), (int)HttpStatusCode.OK),
+                        ServiceResponse<IEnumerable<TimelineDTO>>.SuccessResult(_mapper.Map<IEnumerable<TimelineDTO>>(pagedList), (int)HttpStatusCode.OK),
                         pagedList.MetaData
                     );
             }
@@ -302,20 +319,20 @@ namespace TimelineService.Services
             {
                 return
                     (
-                        ServiceResponse<IEnumerable<Timeline>>.Failure("Error while retrieving the timeline details", new List<string>() { ex.Message }, (int)HttpStatusCode.InternalServerError),
+                        ServiceResponse<IEnumerable<TimelineDTO>>.Failure("Error while retrieving the timeline details", new List<string>() { ex.Message }, (int)HttpStatusCode.InternalServerError),
                         new MetaData()
                     );
             }
         }
 
-        public async Task<(ServiceResponse<IEnumerable<Timeline>>, MetaData)> GetSharedTimelinesForUserId(Guid userId, string? userIdRetrieviedFromTokenHeader, TimelineRequestParameters timelineRequestParameters)
+        public async Task<(ServiceResponse<IEnumerable<TimelineDTO>>, MetaData)> GetSharedTimelinesForUserId(Guid userId, string? userIdRetrieviedFromTokenHeader, TimelineRequestParameters timelineRequestParameters)
         {
             try
             {
                 if (userIdRetrieviedFromTokenHeader == null || userId.ToString() != userIdRetrieviedFromTokenHeader)
                     return
                         (
-                            ServiceResponse<IEnumerable<Timeline>>.Failure("You are not authorized to get this details", (int)HttpStatusCode.Unauthorized),
+                            ServiceResponse<IEnumerable<TimelineDTO>>.Failure("You are not authorized to get this details", (int)HttpStatusCode.Unauthorized),
                             new MetaData()
                         );
 
@@ -329,7 +346,7 @@ namespace TimelineService.Services
                 var pagedList = PagedList<Timeline>.ToPagedList(result, count, timelineRequestParameters.PageNumber, timelineRequestParameters.PageSize);
                 return
                     (
-                        ServiceResponse<IEnumerable<Timeline>>.SuccessResult(_mapper.Map<IEnumerable<Timeline>>(pagedList), (int)HttpStatusCode.OK),
+                        ServiceResponse<IEnumerable<TimelineDTO>>.SuccessResult(_mapper.Map<IEnumerable<TimelineDTO>>(pagedList), (int)HttpStatusCode.OK),
                         pagedList.MetaData
                     );
             }
@@ -337,35 +354,64 @@ namespace TimelineService.Services
             {
                 return
                     (
-                        ServiceResponse<IEnumerable<Timeline>>.Failure("Error while retrieving the timeline details", new List<string>() { ex.Message }, (int)HttpStatusCode.InternalServerError),
+                        ServiceResponse<IEnumerable<TimelineDTO>>.Failure("Error while retrieving the timeline details", new List<string>() { ex.Message }, (int)HttpStatusCode.InternalServerError),
                         new MetaData()
                     );
             }
         }
 
-        public async Task<ServiceResponse<Timeline>> Create(string? createdBy, CreateTimelineDTO createTimelineDTO)
+        public async Task<ServiceResponse<TimelineDTO>> Create(string? createdBy, CreateTimelineDTO createTimelineDTO, IFormFileCollection? files)
         {
             try
             {
-                if(createdBy == null || !ObjectId.TryParse(createdBy, out ObjectId userId))
+                if (createdBy == null || !Guid.TryParse(createdBy, out Guid userId))
                 {
-                    return ServiceResponse<Timeline>.Failure("Unauthorized to perform this operation", (int)HttpStatusCode.Unauthorized);
+                    return ServiceResponse<TimelineDTO>.Failure("Unauthorized to perform this operation", (int)HttpStatusCode.Unauthorized);
                 }
 
                 var _timelineCollection = await _mongoRepository.GetTimelineCollectionContext();
+
+                var images = new List<Image>();
+                if (files != null)
+                {
+                    var results = await _imageUploadService.UploadImagesAsync(files);
+                    if (results == null || results.Count == 0) throw new Exception("There are some problem while uploading medias, try again later");
+                    foreach(var result in results)
+                    {
+                        images.Add(new Image()
+                        {
+                            Name = result.FileName,
+                            Notation = result.PublicId,
+                            Data = result.PublicUrl,
+                            Size = result.FileSize
+                        });
+                    }
+                }
+
+
+                var story = new Story()
+                {
+                    Title = createTimelineDTO.Story.Title,
+                    Content = createTimelineDTO.Story.Content,
+                    WordCount = createTimelineDTO.Story.WordCount,
+                    Medias = files != null ? new Medias()
+                    {
+                        Images = images
+                    } : null
+                };
 
                 var timeline = new Timeline()
                 {
                     Id = ObjectId.GenerateNewId().ToString(),
                     CreatedBy = createdBy,
-                    Story = createTimelineDTO.Story
+                    Story = story
                 };
                 await _timelineCollection.InsertOneAsync(timeline);
-                return ServiceResponse<Timeline>.SuccessResult(timeline, (int)HttpStatusCode.Created);
+                return ServiceResponse<TimelineDTO>.SuccessResult(_mapper.Map<TimelineDTO>(timeline), (int)HttpStatusCode.Created);
             }
             catch (Exception ex)
             {
-                return ServiceResponse<Timeline>.Failure("Error while creating timeline", new List<string>() { ex.Message }, (int)HttpStatusCode.InternalServerError);
+                return ServiceResponse<TimelineDTO>.Failure("Error while creating timeline", new List<string>() { ex.Message }, (int)HttpStatusCode.InternalServerError);
             }
         }
 

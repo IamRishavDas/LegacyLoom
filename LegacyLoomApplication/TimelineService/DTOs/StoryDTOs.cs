@@ -15,12 +15,27 @@ namespace TimelineService.DTOs
         public MediasDTO? Medias { get; set; }
     }
 
+    public class CreateStoryDTO
+    {
+        [Required(ErrorMessage = "Title is required")]
+        [StringLength(maximumLength: 50, MinimumLength = 15, ErrorMessage = "Title should be in the range of 15 to 50")]
+        public required string Title { get; set; }
+
+        [Required(ErrorMessage = "Content size is too large")]
+        [StringLength(maximumLength: int.MaxValue, MinimumLength = 100, ErrorMessage = "Content length shold be of 100 to 2,147,483,647")]
+        public required string Content { get; set; }
+
+        [Required(ErrorMessage = "Word count is required")]
+        [Range(minimum: 10, maximum: int.MaxValue, ErrorMessage = "Word count should be in the range of 10 to 2,147,483,647")]
+        public required long WordCount { get; set; }
+    }
+
     public class MediasDTO
     {
         public List<ImageDTO>? Images { get; set; }
     }
 
-    public record ImageDTO
+    public class ImageDTO
     {
         [Required(ErrorMessage = "Image name is required")]
         [StringLength(maximumLength: 20, MinimumLength = 1)]

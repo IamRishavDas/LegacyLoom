@@ -41,7 +41,7 @@ namespace TimelineService.Controllers
 
         [HttpGet("{id}")]
         [Authorize(Roles = "Admin,Moderator")]
-        public async Task<ActionResult<Timeline>> GetById([FromRoute]string id)
+        public async Task<ActionResult<TimelineDTO>> GetById([FromRoute]string id)
         {
             var response = await _timelineService.GetById(id);
             return StatusCode(response.StatusCode, response);
@@ -49,7 +49,7 @@ namespace TimelineService.Controllers
 
         [HttpGet("user:{userId}")]
         [Authorize(Roles = "Admin,Moderator")]
-        public async Task<ActionResult<IEnumerable<Timeline>>> GetTimelinesByUserId([FromRoute]Guid userId, [FromQuery]TimelineRequestParameters timelineRequestParameters)
+        public async Task<ActionResult<IEnumerable<TimelineDTO>>> GetTimelinesByUserId([FromRoute]Guid userId, [FromQuery]TimelineRequestParameters timelineRequestParameters)
         {
             var (response, metadata) = await _timelineService.GetByCreatedBy(userId, timelineRequestParameters);
             Response.Headers.Append(HeaderKey.PAGINATION, JsonSerializer.Serialize(metadata));
@@ -58,7 +58,7 @@ namespace TimelineService.Controllers
 
         [HttpGet("public")]
         [Authorize(Roles = "User,Moderator,Admin")]
-        public async Task<ActionResult<IEnumerable<Timeline>>> GetPublicTimelines([FromQuery]TimelineRequestParameters timelineRequestParameters)
+        public async Task<ActionResult<IEnumerable<TimelineDTO>>> GetPublicTimelines([FromQuery]TimelineRequestParameters timelineRequestParameters)
         {
             var (respoonse, metadata) = await _timelineService.GetAllPublicTimelines(timelineRequestParameters);
             Response.Headers.Append(HeaderKey.PAGINATION, JsonSerializer.Serialize(metadata));
@@ -67,7 +67,7 @@ namespace TimelineService.Controllers
         
         [HttpGet("shared")]
         [Authorize(Roles = "Admin")]
-        public async Task<ActionResult<IEnumerable<Timeline>>> GetSharedTimelines([FromQuery]TimelineRequestParameters timelineRequestParameters)
+        public async Task<ActionResult<IEnumerable<TimelineDTO>>> GetSharedTimelines([FromQuery]TimelineRequestParameters timelineRequestParameters)
         {
             var (respoonse, metadata) = await _timelineService.GetAllSharedTimelines(timelineRequestParameters);
             Response.Headers.Append(HeaderKey.PAGINATION, JsonSerializer.Serialize(metadata));
@@ -94,7 +94,7 @@ namespace TimelineService.Controllers
 
         [HttpGet("shared/{userId}")]
         [Authorize(Roles = "User,Admin,Moderator")]
-        public async Task<ActionResult<IEnumerable<Timeline>>> GetTimelinesSharedToUserId([FromRoute] Guid userId, TimelineRequestParameters timelineRequestParameters)
+        public async Task<ActionResult<IEnumerable<TimelineDTO>>> GetTimelinesSharedToUserId([FromRoute] Guid userId, TimelineRequestParameters timelineRequestParameters)
         {
             var userIdGotFromTokenHeader = User.FindFirst("UserId")?.Value;
             var (response, metadata) = await _timelineService.GetSharedTimelinesForUserId(userId, userIdGotFromTokenHeader, timelineRequestParameters);
@@ -104,10 +104,10 @@ namespace TimelineService.Controllers
 
         [HttpPost]
         [Authorize(Roles = "User")]
-        public async Task<ActionResult<Timeline>> Create(CreateTimelineDTO createTimelineDTO)
+        public async Task<ActionResult<TimelineDTO>> Create([FromForm]CreateTimelineDTO createTimelineDTO)
         {
             var userId = User.FindFirst("UserId")?.Value;
-            var response = await _timelineService.Create(createdBy: userId, createTimelineDTO);
+            var response = await _timelineService.Create(createdBy: userId, createTimelineDTO, createTimelineDTO.Files);
             return StatusCode(response.StatusCode, response);
         }
 

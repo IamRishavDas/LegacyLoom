@@ -3,11 +3,12 @@ using TimelineService.Models;
 
 namespace TimelineService.DTOs
 {
-    public record CreateTimelineDTO
-    (
+    public class CreateTimelineDTO
+    {
         [Required]
-        Story Story
-    ){ }
+        public required CreateStoryDTO Story { get; set; }
+        public IFormFileCollection? Files { get; set; }
+    }
 
     public class TimelineDTO
     {
