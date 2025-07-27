@@ -19,7 +19,7 @@ namespace UserAuthenticationService.Controllers
         }
 
         [HttpPost("login/username")]
-        public async Task<ActionResult<ServiceResponse<UserLoginResponse>>> LoginUsingUsername([FromBody] UserLoginRequestByUsername loginRequest, [FromQuery] bool usingUserNameAndPassword = true)
+        public async Task<ActionResult<ServiceResponse<UserLoginResponse>>> LoginUsingUsername([FromBody] UserLoginRequestByUsername loginRequest)
         {
             if (!ModelState.IsValid)
             {
@@ -38,7 +38,7 @@ namespace UserAuthenticationService.Controllers
         }
         
         [HttpPost("login/email")]
-        public async Task<ActionResult<ServiceResponse<UserLoginResponse>>> LoginUsingEmail([FromBody] UserLoginRequestByEmail loginRequest, [FromQuery] bool usingUserNameAndPassword = true)
+        public async Task<ActionResult<ServiceResponse<UserLoginResponse>>> LoginUsingEmail([FromBody] UserLoginRequestByEmail loginRequest)
         {
             if (!ModelState.IsValid)
             {

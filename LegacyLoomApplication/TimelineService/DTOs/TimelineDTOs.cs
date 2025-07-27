@@ -3,23 +3,21 @@ using TimelineService.Models;
 
 namespace TimelineService.DTOs
 {
-    public record CreateTimelineDTO
-    (
+    public class CreateTimelineDTO
+    {
         [Required]
-        Story Story,
+        public required CreateStoryDTO Story { get; set; }
+        public IFormFileCollection? Files { get; set; }
+    }
 
-        [Required(ErrorMessage = "User id is required")]
-        Guid CreatedBy
-    ){ }
-
-    public record TimelineDTO
-    (
-        string Id,
-        StoryDTO StoryDTO,
-        Guid CreatedBy,
-        List<Guid>? SharedWith,
-        string Visibility,
-        DateTime CreatedAt,
-        DateTime LastModified
-    ) { }
+    public class TimelineDTO
+    {
+        public required string Id {get; set;}
+        public required StoryDTO StoryDTO { get; set; }
+        public Guid CreatedBy {get; set;}
+        public List<Guid>? SharedWith {get; set;}
+        public required string Visibility {get; set;}
+        public DateTime CreatedAt {get; set;}
+        public DateTime LastModified {get; set;}
+    }
 }
