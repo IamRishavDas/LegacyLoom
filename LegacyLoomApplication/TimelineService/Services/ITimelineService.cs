@@ -12,6 +12,7 @@ namespace TimelineService.Services
         Task<ServiceResponse<TimelineDTO>> Create(string? createdBy, CreateTimelineDTO createTimelineDTO, IFormFileCollection? files);/*createdBy is Guid*/
         Task<(ServiceResponse<IEnumerable<TimelineDTO>>, MetaData)> GetAll(TimelineRequestParameters timelineRequestParameters);
         Task<(ServiceResponse<IEnumerable<TimelineDTO>>, MetaData)> GetCreatorTimelines(string? userId, TimelineRequestParameters timelineRequestParameters);
+        Task<ServiceResponse<TimelineDTO>> GetUserCreatedTimelineByUser(string? userId, string timelineId);
         Task<ServiceResponse<TimelineDTO>> GetById(string id);
         Task<(ServiceResponse<IEnumerable<TimelineDTO>>, MetaData)> GetByCreatedBy(Guid userId, TimelineRequestParameters timelineRequestParameters);
         Task<(ServiceResponse<IEnumerable<TimelineDTO>>, MetaData)> GetAllPublicTimelines(TimelineRequestParameters timelineRequestParameters);

@@ -39,6 +39,15 @@ namespace TimelineService.Controllers
             return StatusCode(serviceResponseOfPagedList.StatusCode, serviceResponseOfPagedList);
         }
 
+        [HttpGet("my-timelines/{timelineId}")]
+        [Authorize(Roles = "User")]
+        public async Task<ActionResult<TimelineDTO>> GetUserTimelineCreatedByUser([FromRoute] string timelineId)
+        {
+            string? userId = User.FindFirst("UserId")?.Value;
+            var response = await _timelineService.GetUserCreatedTimelineByUser(userId, timelineId);
+            return StatusCode(response.StatusCode, response);
+        }
+
         [HttpGet("{id}")]
         [Authorize(Roles = "Admin,Moderator")]
         public async Task<ActionResult<TimelineDTO>> GetById([FromRoute]string id)
