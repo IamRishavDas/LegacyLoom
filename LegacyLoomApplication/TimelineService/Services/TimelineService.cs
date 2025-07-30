@@ -62,7 +62,7 @@ namespace TimelineService.Services
         {
             try
             {
-                if(userId == null)
+                if(userId == null && !Guid.TryParse(userId, out Guid creatorId))
                 {
                     return
                         (
@@ -73,6 +73,12 @@ namespace TimelineService.Services
 
                 var _timelineCollection = await _mongoRepository.GetTimelineCollectionContext();
                 var timelines = await _timelineCollection.Find(s => !s.IsDeleted && s.CreatedBy == userId).ToListAsync();
+                
+                foreach(var timeline in timelines)
+                {
+                    timeline.Story.Content = new String(timeline.Story.Content.Take(150).ToArray());
+                }
+
                 var orderedTimelines = _sortHelper.ApplySort(timelines.AsQueryable<Timeline>(), timelineRequestParameters.OrderBy);
 
                 var count = timelines.Count;
@@ -501,6 +507,30 @@ namespace TimelineService.Services
             catch (Exception ex)
             {
                 return ServiceResponse<DeleteResult>.Failure("Error while deleting try after some time", new List<string>() {ex.Message}, (int)HttpStatusCode.InternalServerError);
+            }
+        }
+
+        public async Task<ServiceResponse<TimelineDTO>> GetUserCreatedTimelineByUser(string? userId, string timelineId)
+        {
+            try
+            {
+                if(userId == null || !ObjectId.TryParse(timelineId, out ObjectId _id) || !Guid.TryParse(userId, out Guid user))
+                {
+                    return ServiceResponse<TimelineDTO>.Failure("Not a valid timeline id or user id", (int)HttpStatusCode.BadRequest);
+                }
+                var _timelineCollection = await _mongoRepository.GetTimelineCollectionContext();
+                var timeline = await _timelineCollection.Find(timeline => timeline.Id == timelineId && timeline.CreatedBy == userId && !timeline.IsDeleted).FirstOrDefaultAsync();
+
+                if(timeline == null)
+                {
+                    return ServiceResponse<TimelineDTO>.Failure("No timeline found", (int)HttpStatusCode.NotFound);
+                }
+
+                return ServiceResponse<TimelineDTO>.SuccessResult(_mapper.Map<TimelineDTO>(timeline), (int)HttpStatusCode.OK);
+            }
+            catch (Exception ex)
+            {
+                return ServiceResponse<TimelineDTO>.Failure("Error while finding the timelien try after some time", new List<string>() {ex.Message}, (int)HttpStatusCode.InternalServerError);
             }
         }
     }
