@@ -13,7 +13,8 @@
                                   {
                                       policy.WithOrigins(origins)
                                             .AllowAnyHeader()
-                                            .AllowAnyMethod();
+                                            .AllowAnyMethod()
+                                            .WithExposedHeaders("X-Pagination");
                                   });
             });
         }

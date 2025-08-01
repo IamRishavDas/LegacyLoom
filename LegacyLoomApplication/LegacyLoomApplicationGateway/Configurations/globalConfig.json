@@ -116,7 +116,7 @@
       "RateLimitOptions": {
         "EnableRateLimiting": true,
         "Period": "20s",
-        "Limit": 5,
+        "Limit": 10,
         "PeriodTimespan": 10,
         "ClientIdHeader": "Authorization"
       },
