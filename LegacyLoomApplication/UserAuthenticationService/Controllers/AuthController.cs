@@ -34,6 +34,14 @@ namespace UserAuthenticationService.Controllers
             }
 
             Response.Headers.Append(HeaderKey.AUTHORIZATION, $"Bearer {response.Data?.Token}");
+            Response.Cookies.Append(HeaderKey.AUTHORIZATION, value: response.Data?.Token, new CookieOptions()
+            {
+                HttpOnly = true,
+                Secure = true,
+                SameSite = SameSiteMode.None,
+                Path = "/",
+                Expires = DateTimeOffset.UtcNow.AddMinutes(60)
+            });
             return StatusCode(response.StatusCode, response);
         }
         
@@ -53,6 +61,14 @@ namespace UserAuthenticationService.Controllers
             }
 
             Response.Headers.Append(HeaderKey.AUTHORIZATION, $"Bearer {response.Data?.Token}");
+            Response.Cookies.Append(HeaderKey.AUTHORIZATION, value: response.Data?.Token, new CookieOptions()
+            {
+                HttpOnly = true,
+                Secure = true,
+                SameSite = SameSiteMode.None,
+                Path = "/",
+                Expires = DateTimeOffset.UtcNow.AddMinutes(60)
+            });
             return StatusCode(response.StatusCode, response);
         }
 
@@ -61,6 +77,14 @@ namespace UserAuthenticationService.Controllers
         {
             var response = _authService.GenerateTokenForLogout();
             Response.Headers.Append(HeaderKey.AUTHORIZATION, $"Bearer {response.Data?.Token}");
+            Response.Cookies.Append(HeaderKey.AUTHORIZATION, value: response.Data?.Token, new CookieOptions()
+            {
+                HttpOnly = true,
+                Secure = true,
+                SameSite = SameSiteMode.None,
+                Path = "/",
+                Expires = DateTimeOffset.UtcNow.AddMinutes(60)
+            });
             return StatusCode(response.StatusCode, response);
         }
     }

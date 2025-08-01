@@ -37,7 +37,7 @@ namespace TimelineService.Services
                 var orderedTimelines = _sortHelper.ApplySort(timelines.AsQueryable<Timeline>(), timelineRequestParameters.OrderBy);
 
                 var count = timelines.Count;
-                var result = orderedTimelines.Skip((timelineRequestParameters.PageNumber - 1 * timelineRequestParameters.PageSize)).ToList();
+                var result = orderedTimelines.Skip((timelineRequestParameters.PageNumber - 1 * timelineRequestParameters.PageSize)).Take(timelineRequestParameters.PageSize).ToList();
 
                 var pagedListTimelines = PagedList<Timeline>.ToPagedList(result, count, timelineRequestParameters.PageNumber, timelineRequestParameters.PageSize);
                 var listOfTimeline = _mapper.Map<IEnumerable<Timeline>>(pagedListTimelines);
@@ -74,15 +74,17 @@ namespace TimelineService.Services
                 var _timelineCollection = await _mongoRepository.GetTimelineCollectionContext();
                 var timelines = await _timelineCollection.Find(s => !s.IsDeleted && s.CreatedBy == userId).ToListAsync();
                 
-                foreach(var timeline in timelines)
-                {
-                    timeline.Story.Content = new String(timeline.Story.Content.Take(150).ToArray());
-                }
 
                 var orderedTimelines = _sortHelper.ApplySort(timelines.AsQueryable<Timeline>(), timelineRequestParameters.OrderBy);
 
                 var count = timelines.Count;
-                var result = orderedTimelines.Skip((timelineRequestParameters.PageNumber - 1 * timelineRequestParameters.PageSize)).ToList();
+                var n_result = orderedTimelines.Skip(((timelineRequestParameters.PageNumber - 1) * timelineRequestParameters.PageSize));
+                var result = n_result.Take(timelineRequestParameters.PageSize).ToList();
+
+                foreach(var timeline in result)
+                {
+                    timeline.Story.Content = new String(timeline.Story.Content.Take(150).ToArray());
+                }
 
                 var pagedListTimelines = PagedList<Timeline>.ToPagedList(result, count, timelineRequestParameters.PageNumber, timelineRequestParameters.PageSize);
                 var listOfTimeline = _mapper.Map<IEnumerable<Timeline>>(pagedListTimelines);
@@ -112,7 +114,7 @@ namespace TimelineService.Services
                 var orderedTimelines = _sortHelper.ApplySort(timelines.AsQueryable<Timeline>(), timelineRequestParameters.OrderBy);
 
                 var count = timelines.Count;
-                var result = orderedTimelines.Skip((timelineRequestParameters.PageNumber - 1 * timelineRequestParameters.PageSize)).ToList();
+                var result = orderedTimelines.Skip((timelineRequestParameters.PageNumber - 1 * timelineRequestParameters.PageSize)).Take(timelineRequestParameters.PageSize).ToList();
 
                 var pagedListTimelines = PagedList<Timeline>.ToPagedList(result, count, timelineRequestParameters.PageNumber, timelineRequestParameters.PageSize);
                 return
@@ -144,7 +146,7 @@ namespace TimelineService.Services
                 var orderedTimelines = _sortHelper.ApplySort(timelines.AsQueryable<Timeline>(), timelineRequestParameters.OrderBy);
 
                 var count = timelines.Count;
-                var result = orderedTimelines.Skip((timelineRequestParameters.PageNumber - 1 * timelineRequestParameters.PageSize)).ToList();
+                var result = orderedTimelines.Skip((timelineRequestParameters.PageNumber - 1 * timelineRequestParameters.PageSize)).Take(timelineRequestParameters.PageSize).ToList();
 
                 var pagedListTimelines = PagedList<Timeline>.ToPagedList(result, count, timelineRequestParameters.PageNumber, timelineRequestParameters.PageSize);
                 return
@@ -348,7 +350,7 @@ namespace TimelineService.Services
                     .Find(timeline => timeline.SharedWith != null && timeline.SharedWith.Contains(userId.ToString()) && timeline.Visibility == TimelineVisibility.PUBLIC && !timeline.IsDeleted).ToListAsync();
                 var orderedTimlinesByUserId = _sortHelper.ApplySort(timelinesByUser.AsQueryable(), timelineRequestParameters.OrderBy).ToList();
                 var count = timelinesByUser.Count;
-                var result = orderedTimlinesByUserId.Skip((timelineRequestParameters.PageNumber - 1) * timelineRequestParameters.PageSize).ToList();
+                var result = orderedTimlinesByUserId.Skip((timelineRequestParameters.PageNumber - 1) * timelineRequestParameters.PageSize).Take(timelineRequestParameters.PageSize).ToList();
                 var pagedList = PagedList<Timeline>.ToPagedList(result, count, timelineRequestParameters.PageNumber, timelineRequestParameters.PageSize);
                 return
                     (
