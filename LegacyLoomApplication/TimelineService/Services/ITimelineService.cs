@@ -15,7 +15,8 @@ namespace TimelineService.Services
         Task<ServiceResponse<TimelineDTO>> GetUserCreatedTimelineByUser(string? userId, string timelineId);
         Task<ServiceResponse<TimelineDTO>> GetById(string id);
         Task<(ServiceResponse<IEnumerable<TimelineDTO>>, MetaData)> GetByCreatedBy(Guid userId, TimelineRequestParameters timelineRequestParameters);
-        Task<(ServiceResponse<IEnumerable<TimelineDTO>>, MetaData)> GetAllPublicTimelines(TimelineRequestParameters timelineRequestParameters);
+        Task<(ServiceResponse<IEnumerable<TimelineLookupDTO>>, MetaData)> GetAllPublicTimelinesLookup(string? userId, TimelineRequestParameters timelineRequestParameters);
+        Task<ServiceResponse<TimelineDTO>> GetPublicTimelineByTimelineId(string timelineId);
         Task<(ServiceResponse<IEnumerable<TimelineDTO>>, MetaData)> GetAllSharedTimelines(TimelineRequestParameters timelineRequestParameters);
         Task<ServiceResponse<ReplaceOneResult>> ShareTimeline(string timelineId, List<Guid> userGuids, string? userIdRetrieviedFromToken);
         Task<ServiceResponse<ReplaceOneResult>> SetTimelineVisibility(string timelineId, string visibility, string? userIdRetrieviedFromToken);

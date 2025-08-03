@@ -67,11 +67,20 @@ namespace TimelineService.Controllers
 
         [HttpGet("public")]
         [Authorize(Roles = "User,Moderator,Admin")]
-        public async Task<ActionResult<IEnumerable<TimelineDTO>>> GetPublicTimelines([FromQuery]TimelineRequestParameters timelineRequestParameters)
+        public async Task<ActionResult<IEnumerable<TimelineLookupDTO>>> GetPublicTimelines([FromQuery]TimelineRequestParameters timelineRequestParameters)
         {
-            var (respoonse, metadata) = await _timelineService.GetAllPublicTimelines(timelineRequestParameters);
+            var userId = User.FindFirst("UserId")?.Value;
+            var (respoonse, metadata) = await _timelineService.GetAllPublicTimelinesLookup(userId, timelineRequestParameters);
             Response.Headers.Append(HeaderKey.PAGINATION, JsonSerializer.Serialize(metadata));
             return StatusCode(respoonse.StatusCode, respoonse);
+        }
+
+        [HttpGet("public/{id}")]
+        [Authorize(Roles = "User,Moderator,Admin")]
+        public async Task<ActionResult<TimelineDTO>> GetPublicTimelineByTimelineId([FromRoute] string id)
+        {
+            var response = await _timelineService.GetPublicTimelineByTimelineId(id);
+            return StatusCode(response.StatusCode, response);
         }
         
         [HttpGet("shared")]

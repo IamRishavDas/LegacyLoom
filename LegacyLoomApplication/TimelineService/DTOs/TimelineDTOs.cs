@@ -20,4 +20,12 @@ namespace TimelineService.DTOs
         public DateTime CreatedAt {get; set;}
         public DateTime LastModified {get; set;}
     }
+
+    public class TimelineLookupDTO
+    {
+        public required string Id { get; set; }
+        public required StoryLookupDTO StoryDTO { get; set; }
+        public required Guid CreatedBy { get; set; }
+        public required DateTime LastModified { get; set; }
+    }
 }

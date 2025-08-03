@@ -38,11 +38,49 @@ namespace TimelineService.MappingConfiguration
             }
             return mediasDTO;
         }
+
+        private static StoryLookupDTO ToStoryLookupDTO(Story story)
+        {
+            var storyLookupDTO = new StoryLookupDTO()
+            {
+                Title = story.Title,
+                Content = new String(story.Content.Take(150).ToArray()),
+                Medias = ToMediasLookupDTO(story.Medias)
+            };
+            return storyLookupDTO;
+        }
+
+        private static MediasLookupDTO? ToMediasLookupDTO(Medias? medias)
+        {
+            if (medias == null) return null;
+            if (medias.Images == null || medias.Images.Count == 0) return null;
+            var mediasLookupDTO = new MediasLookupDTO()
+            {
+                Images = new List<ImageLookupDTO>()
+            };
+
+            for(int i=0; i<medias.Images.Count; i++)
+            {
+                var imageLookupDTO = new ImageLookupDTO()
+                {
+                    Name = medias.Images[i].Name,
+                    Data = medias.Images[i].Data
+                };
+                mediasLookupDTO.Images.Add(imageLookupDTO);
+            }
+            return mediasLookupDTO;
+        }
+
         public ApplicationMappingConfig()
         {
             CreateMap<Image, ImageDTO>();
             CreateMap<Medias, MediasDTO>();
             CreateMap<Story, StoryDTO>();
+
+            CreateMap<Image, ImageLookupDTO>();
+            CreateMap<Medias, MediasLookupDTO>();
+            CreateMap<Story, StoryLookupDTO>();
+
             CreateMap<Timeline, TimelineDTO>()
                 .ForMember(dest => dest.Visibility,
                     s => s.MapFrom(src => src.Visibility.ToString())
@@ -50,6 +88,9 @@ namespace TimelineService.MappingConfiguration
                 .ForMember(dest => dest.StoryDTO,
                     s => s.MapFrom(src => ToStoryDTO(src.Story))
                 );
+            CreateMap<Timeline, TimelineLookupDTO>()
+                .ForMember(dest => dest.StoryDTO,
+                    s => s.MapFrom(src => ToStoryLookupDTO(src.Story)));
         }
     }
 }

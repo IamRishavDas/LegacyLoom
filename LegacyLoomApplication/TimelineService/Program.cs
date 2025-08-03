@@ -17,7 +17,7 @@ builder.Services.LoadMongoDbSettings(builder.Configuration);
 builder.Services.CreateMongoClientInstance(builder.Configuration);
 builder.Services.AddSingleton<AppMongoRepository>();
 builder.Services.AddCloudinaryServiceAsSingleton(builder.Configuration);
-builder.Services.AddScoped<IImageUploadService, ImageUploadService>();
+builder.Services.AddScoped<IImageService, ImageService>();
 builder.Services.AddSingleton<ISortHelper<Timeline>, SortHelper<Timeline>>();
 builder.Services.AddScoped<ITimelineService, TimelineService.Services.TimelineService>();
 builder.Services.AddScoped<IStoryService, StoryService>();

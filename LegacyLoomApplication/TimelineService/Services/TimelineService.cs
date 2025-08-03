@@ -17,15 +17,15 @@ namespace TimelineService.Services
     {
         private readonly AppMongoRepository _mongoRepository;
         private readonly ISortHelper<Timeline> _sortHelper;
-        private readonly IImageUploadService _imageUploadService;
+        private readonly IImageService _imageService;
         private readonly IMapper _mapper;
 
-        public TimelineService(AppMongoRepository mongoRepository, IMapper mapper, ISortHelper<Timeline> sortHelper, IImageUploadService imageUploadService)
+        public TimelineService(AppMongoRepository mongoRepository, IMapper mapper, ISortHelper<Timeline> sortHelper, IImageService imageService)
         {
             _mongoRepository = mongoRepository;
             _sortHelper = sortHelper;
             _mapper = mapper;
-            _imageUploadService = imageUploadService;
+            _imageService = imageService;
         }
 
         public async Task<(ServiceResponse<IEnumerable<TimelineDTO>>, MetaData)> GetAll(TimelineRequestParameters timelineRequestParameters)
@@ -37,7 +37,7 @@ namespace TimelineService.Services
                 var orderedTimelines = _sortHelper.ApplySort(timelines.AsQueryable<Timeline>(), timelineRequestParameters.OrderBy);
 
                 var count = timelines.Count;
-                var result = orderedTimelines.Skip((timelineRequestParameters.PageNumber - 1 * timelineRequestParameters.PageSize)).Take(timelineRequestParameters.PageSize).ToList();
+                var result = orderedTimelines.Skip((timelineRequestParameters.PageNumber - 1) * timelineRequestParameters.PageSize).Take(timelineRequestParameters.PageSize).ToList();
 
                 var pagedListTimelines = PagedList<Timeline>.ToPagedList(result, count, timelineRequestParameters.PageNumber, timelineRequestParameters.PageSize);
                 var listOfTimeline = _mapper.Map<IEnumerable<Timeline>>(pagedListTimelines);
@@ -105,23 +105,29 @@ namespace TimelineService.Services
             }
         }
 
-        public async Task<(ServiceResponse<IEnumerable<TimelineDTO>>, MetaData)> GetAllPublicTimelines(TimelineRequestParameters timelineRequestParameters)
+        public async Task<(ServiceResponse<IEnumerable<TimelineLookupDTO>>, MetaData)> GetAllPublicTimelinesLookup(string? userId, TimelineRequestParameters timelineRequestParameters)
         {
             try
             {
+                if (userId == null || !Guid.TryParse(userId, out Guid _userId))
+                    return
+                        (
+                            ServiceResponse<IEnumerable<TimelineLookupDTO>>.Failure("You are unauthorized", (int)HttpStatusCode.Unauthorized),
+                            new MetaData()
+                        );
                 var _timelineCollection = await _mongoRepository.GetTimelineCollectionContext();
-                var timelines = await _timelineCollection.Find(timeline => timeline.Visibility == TimelineVisibility.PUBLIC && !timeline.IsDeleted).ToListAsync();
+                var timelines = await _timelineCollection.Find(timeline => timeline.Visibility != TimelineVisibility.PRIVATE && !timeline.IsDeleted).ToListAsync();
                 var orderedTimelines = _sortHelper.ApplySort(timelines.AsQueryable<Timeline>(), timelineRequestParameters.OrderBy);
 
                 var count = timelines.Count;
-                var result = orderedTimelines.Skip((timelineRequestParameters.PageNumber - 1 * timelineRequestParameters.PageSize)).Take(timelineRequestParameters.PageSize).ToList();
+                var result = orderedTimelines.Skip(((timelineRequestParameters.PageNumber - 1) * timelineRequestParameters.PageSize)).Take(timelineRequestParameters.PageSize).ToList();
 
                 var pagedListTimelines = PagedList<Timeline>.ToPagedList(result, count, timelineRequestParameters.PageNumber, timelineRequestParameters.PageSize);
                 return
                     (
-                        ServiceResponse<IEnumerable<TimelineDTO>>.SuccessResult
+                        ServiceResponse<IEnumerable<TimelineLookupDTO>>.SuccessResult
                         (
-                            _mapper.Map<IEnumerable<TimelineDTO>>(pagedListTimelines),
+                            _mapper.Map<IEnumerable<TimelineLookupDTO>>(pagedListTimelines),
                             (int)HttpStatusCode.OK
                         ),
                         pagedListTimelines.MetaData
@@ -131,9 +137,33 @@ namespace TimelineService.Services
             {
                 return
                     (
-                        ServiceResponse<IEnumerable<TimelineDTO>>.Failure("Error while retireving the timeline details", new List<string>() { ex.Message }, (int)HttpStatusCode.InternalServerError),
+                        ServiceResponse<IEnumerable<TimelineLookupDTO>>.Failure("Error while retireving the timeline details", new List<string>() { ex.Message }, (int)HttpStatusCode.InternalServerError),
                         new MetaData()
                     );
+            }
+        }
+
+        public async Task<ServiceResponse<TimelineDTO>> GetPublicTimelineByTimelineId(string timelineId)
+        {
+            try
+            {
+                if (timelineId == null || !ObjectId.TryParse(timelineId, out ObjectId _id))
+                {
+                    return ServiceResponse<TimelineDTO>.Failure("Invalid timeline id", (int)HttpStatusCode.BadRequest);
+                }
+                var _timelineCollection = await _mongoRepository.GetTimelineCollectionContext();
+                var timeline = await _timelineCollection.Find(timeline => timeline.Id == timelineId && timeline.Visibility != TimelineVisibility.PRIVATE && !timeline.IsDeleted).FirstOrDefaultAsync();
+                if(timeline == null)
+                {
+                    return ServiceResponse<TimelineDTO>.Failure("No such timeline found or deleted", (int)HttpStatusCode.NotFound);
+                }
+
+                var timelineDTO = _mapper.Map<TimelineDTO>(timeline);
+                return ServiceResponse<TimelineDTO>.SuccessResult(timelineDTO, (int)HttpStatusCode.OK);
+            }
+            catch (Exception ex)
+            {
+                return ServiceResponse<TimelineDTO>.Failure("Error while retireving the timeline details", new List<string>() { ex.Message }, (int)HttpStatusCode.InternalServerError);
             }
         }
 
@@ -146,7 +176,7 @@ namespace TimelineService.Services
                 var orderedTimelines = _sortHelper.ApplySort(timelines.AsQueryable<Timeline>(), timelineRequestParameters.OrderBy);
 
                 var count = timelines.Count;
-                var result = orderedTimelines.Skip((timelineRequestParameters.PageNumber - 1 * timelineRequestParameters.PageSize)).Take(timelineRequestParameters.PageSize).ToList();
+                var result = orderedTimelines.Skip((timelineRequestParameters.PageNumber - 1) * timelineRequestParameters.PageSize).Take(timelineRequestParameters.PageSize).ToList();
 
                 var pagedListTimelines = PagedList<Timeline>.ToPagedList(result, count, timelineRequestParameters.PageNumber, timelineRequestParameters.PageSize);
                 return
@@ -315,7 +345,7 @@ namespace TimelineService.Services
                 var timelinesByUser = await _timelineCollection.Find(timeline => timeline.CreatedBy == userId.ToString() && timeline.Visibility != TimelineVisibility.PRIVATE && !timeline.IsDeleted).ToListAsync();
                 var orderedTimlinesByUserId = _sortHelper.ApplySort(timelinesByUser.AsQueryable(), timelineRequestParameters.OrderBy).ToList();
                 var count = timelinesByUser.Count;
-                var result = orderedTimlinesByUserId.Skip((timelineRequestParameters.PageNumber - 1) * timelineRequestParameters.PageSize).ToList();
+                var result = orderedTimlinesByUserId.Skip((timelineRequestParameters.PageNumber - 1) * timelineRequestParameters.PageSize).Take(timelineRequestParameters.PageSize).ToList();
                 var pagedList = PagedList<Timeline>.ToPagedList(result, count, timelineRequestParameters.PageNumber, timelineRequestParameters.PageSize);
                 return
                     (
@@ -380,9 +410,13 @@ namespace TimelineService.Services
                 var _timelineCollection = await _mongoRepository.GetTimelineCollectionContext();
 
                 var images = new List<Image>();
-                if (files != null)
+                if (files != null && files.Count != 0)
                 {
-                    var results = await _imageUploadService.UploadImagesAsync(files);
+                    if(files.Count > 5)
+                    {
+                        return ServiceResponse<TimelineDTO>.Failure("You can upload 5 images", (int)HttpStatusCode.BadRequest);
+                    }
+                    var results = await _imageService.UploadImagesAsync(files);
                     if (results == null || results.Count == 0) throw new Exception("There are some problem while uploading medias, try again later");
                     foreach(var result in results)
                     {
@@ -441,6 +475,18 @@ namespace TimelineService.Services
                 timeline.SharedWith = new List<string>();
                 timeline.Visibility = TimelineVisibility.PRIVATE;
                 timeline.LastModified = DateTime.UtcNow;
+
+                if(timeline.Story.Medias != null && timeline.Story.Medias.Images != null && timeline.Story.Medias.Images.Count != 0)
+                {
+                    var images = timeline.Story.Medias.Images;
+                    var publicIds = new List<string>();
+                    foreach(var image in images)
+                    {
+                        publicIds.Add(image.Notation);
+                    }
+                    var iamgeDeletionResults = _imageService.DeleteImagesAsync(publicIds);
+                }
+
 
                 await _timelineCollection.ReplaceOneAsync(timeline => timeline.Id == timelineId, timeline);
                 return ServiceResponse.SuccessResult((int)HttpStatusCode.OK, "Timeline deleted successfully");
