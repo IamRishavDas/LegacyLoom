@@ -1,9 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using NotificationService.Models;
 using NotificationService.Services;
-using NotificationService.EmailTemplates;
 using ServiceResponseShared;
-using SendGrid;
 using Microsoft.AspNetCore.Authorization;
 using NotificationService.RequestFeatures;
 using RequestFeatureShared.Constants;
@@ -27,7 +25,7 @@ namespace NotificationService.Controllers
         }
 
         [HttpPost("send")]
-        public async Task<ActionResult<ServiceResponse<Response>>> SendWelcomeMailAsync([FromBody] EmailSenderModel emailSenderModel)
+        public async Task<ActionResult<ServiceResponse<string>>> SendWelcomeMailAsync([FromBody] EmailSenderModel emailSenderModel)
         {
             var response = await _notificationSender
                 .SendWelcomeNotificationAsync(

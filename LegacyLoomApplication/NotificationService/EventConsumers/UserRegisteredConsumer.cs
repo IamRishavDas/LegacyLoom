@@ -34,6 +34,10 @@ namespace NotificationService.EventConsumers
                     });
                     if (!notificationCreateResponse.Success) throw new Exception("Error while storing the notification log to the Notification Collection");
                 }
+                else
+                {
+                    Console.WriteLine($"There was some problem while sending email: {message.Email}");
+                }
             }
             catch (Exception ex)
             {
