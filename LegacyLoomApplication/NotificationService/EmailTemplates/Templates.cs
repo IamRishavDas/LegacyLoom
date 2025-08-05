@@ -254,7 +254,7 @@ namespace NotificationService.EmailTemplates
                                         <td class=""content"">
                                             <h1 class=""main-title"">Welcome to Your Creative Journey!</h1>
                                             <div class=""welcome-box"">
-                                                <p class=""welcome-text"">Hello <strong style=""color: #d2691e;"">{{userName}}</strong>,</p>
+                                                <p class=""welcome-text"">Hello <strong style=""color: #d2691e;"">{userName}</strong>,</p>
                                                 <p class=""welcome-subtext"">
                                                     Welcome to Legacy Loom, where digital innovation meets timeless craftsmanship. You're now part of a community that celebrates the art of storytelling through weaving, preserving traditions while creating new memories that will last for generations.
                                                 </p>

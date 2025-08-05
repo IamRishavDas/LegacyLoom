@@ -5,8 +5,10 @@
       "DownstreamScheme": "https",
       "DownstreamHostAndPorts": [
         {
-          "Host": "localhost",
-          "Port": 7160
+          "Host": "userauthenticationservice20250805012747-dwgxabdwhda2agfv.canadacentral-01.azurewebsites.net",
+          "Port": 443
+          //"Host": "localhost",
+          //"Port": 7160
         }
       ],
       "UpstreamPathTemplate": "/gateway/api/auth/{everything}",
@@ -25,8 +27,10 @@
       "DownstreamScheme": "https",
       "DownstreamHostAndPorts": [
         {
-          "Host": "localhost",
-          "Port": 7160
+          "Host": "userauthenticationservice20250805012747-dwgxabdwhda2agfv.canadacentral-01.azurewebsites.net",
+          "Port": 443
+          //"Host": "localhost",
+          //"Port": 7160
         }
       ],
       "UpstreamPathTemplate": "/gateway/api/users/{everything}",
@@ -55,8 +59,10 @@
       "DownstreamScheme": "https",
       "DownstreamHostAndPorts": [
         {
-          "Host": "localhost",
-          "Port": 7160
+          "Host": "userauthenticationservice20250805012747-dwgxabdwhda2agfv.canadacentral-01.azurewebsites.net",
+          "Port": 443
+          //"Host": "localhost",
+          //"Port": 7160
         }
       ],
       "UpstreamPathTemplate": "/gateway/api/users/{everything}",
@@ -76,8 +82,10 @@
       "DownstreamScheme": "https",
       "DownstreamHostAndPorts": [
         {
-          "Host": "localhost",
-          "Port": 7276
+          "Host": "notificationservice20250805022502-d6dfbdepgmegh4ax.canadacentral-01.azurewebsites.net",
+          "Port": 443
+          //"Host": "localhost",
+          //"Port": 7276
         }
       ],
       "UpstreamPathTemplate": "/gateway/api/notifications/{everything}",
@@ -106,8 +114,8 @@
       "DownstreamScheme": "https",
       "DownstreamHostAndPorts": [
         {
-          "Host": "localhost",
-          "Port": 7175
+          "Host": "timelineservice20250805023746-e3eccvh4c6btftes.canadacentral-01.azurewebsites.net",
+          "Port": 443
         }
       ],
       "UpstreamPathTemplate": "/gateway/api/timelines/{everything}",
