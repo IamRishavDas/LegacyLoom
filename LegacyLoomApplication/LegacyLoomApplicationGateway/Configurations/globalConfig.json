@@ -140,7 +140,7 @@
     }
   ],
   "GlobalConfiguration": {
-    "BaseUrl": "https://localhost:7210"
+    "BaseUrl": "https://legacyloomapplicationgateway-apa4f3aag7e4czf0.canadacentral-01.azurewebsites.net"
   },
   "Includes": [
     "authService.json",
