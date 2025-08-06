@@ -12,11 +12,21 @@ namespace NotificationService.ConsumerRegistrationExtension
                 x.AddConsumer<UserRegisteredConsumer>();
                 x.UsingRabbitMq((context, cfg) =>
                 {
-                    cfg.Host(configuration["MessabeBrokerHost:Host"] ?? throw new ArgumentNullException("Message broker host not found"));
+                    cfg.Host(configuration["MessabeBrokerHost:Host"] ?? throw new ArgumentNullException("Message broker host not found"), h =>
+                    {
+                        h.UseSsl(s =>
+                        {
+                            s.Protocol = System.Security.Authentication.SslProtocols.Tls12;
+                        });
+                        h.Heartbeat(TimeSpan.FromSeconds(60));
+                    });
+
+                    cfg.UseMessageRetry(r => r.Interval(5, TimeSpan.FromSeconds(5)));
 
                     cfg.ReceiveEndpoint("user-registered-queue", e =>
                     {
                         e.ConfigureConsumer<UserRegisteredConsumer>(context);
+                        e.UseMessageRetry(r => r.Interval(3, TimeSpan.FromSeconds(10)));
                     });
                 });
             });

@@ -252,45 +252,19 @@ namespace NotificationService.EmailTemplates
                                     <!-- Main Content -->
                                     <tr>
                                         <td class=""content"">
-                                            <h1 class=""main-title"">Welcome to Your Creative Journey!</h1>
                                             <div class=""welcome-box"">
                                                 <p class=""welcome-text"">Hello <strong style=""color: #d2691e;"">{userName}</strong>,</p>
                                                 <p class=""welcome-subtext"">
                                                     Welcome to Legacy Loom, where digital innovation meets timeless craftsmanship. You're now part of a community that celebrates the art of storytelling through weaving, preserving traditions while creating new memories that will last for generations.
                                                 </p>
                                             </div>
-                                            <!-- Feature Highlights -->
-                                            <div style=""margin: 30px 0;"">
-                                                <div class=""feature-item"">
-                                                    <div class=""feature-icon feature-icon-1"">🧵</div>
-                                                    <div>
-                                                        <div class=""feature-title"">Craft Your Stories</div>
-                                                        <div class=""feature-desc"">Transform your experiences into beautiful, woven narratives</div>
-                                                    </div>
-                                                </div>
-                                                <div class=""feature-item"">
-                                                    <div class=""feature-icon feature-icon-2"">🏛️</div>
-                                                    <div>
-                                                        <div class=""feature-title"">Preserve Traditions</div>
-                                                        <div class=""feature-desc"">Keep family heritage and cultural practices alive for future generations</div>
-                                                    </div>
-                                                </div>
-                                                <div class=""feature-item"">
-                                                    <div class=""feature-icon feature-icon-3"">🤝</div>
-                                                    <div>
-                                                        <div class=""feature-title"">Connect & Share</div>
-                                                        <div class=""feature-desc"">Join a community of creators and storytellers worldwide</div>
-                                                    </div>
-                                                </div>
-                                            </div>
                                             <!-- CTA Button -->
                                             <div style=""text-align: center; margin: 30px 0;"">
-                                                <a class=""cta-button"" href=""https://example.com/get-started"" target=""_blank"">Begin Your Legacy</a>
+                                                <a class=""cta-button"" href=""https://legacyloom.netlify.app/"" target=""_blank"">Begin Your Legacy</a>
                                             </div>
                                             <!-- Support Section -->
                                             <div class=""support-section"">
                                                 <strong>Need assistance?</strong>
-                                                <p>Our support team is here to help.<br>
                                                 Reach out at <a href=""mailto:legacyloomapp@gmail.com"">legacyloomapp@gmail.com</a></p>
                                             </div>
                                         </td>
