@@ -15,6 +15,19 @@ namespace TimelineService.DTOs
         public MediasDTO? Medias { get; set; }
     }
 
+    public class StoryLookupDTO
+    {
+        [Required(ErrorMessage = "Title is required")]
+        [StringLength(maximumLength: 50, MinimumLength = 15, ErrorMessage = "Title should be in the range of 15 to 50")]
+        public required string Title { get; set; }
+
+        [Required(ErrorMessage = "Content size is too large")]
+        [StringLength(maximumLength: int.MaxValue, MinimumLength = 100, ErrorMessage = "Content length shold be of 100 to 2,147,483,647")]
+        public required string Content { get; set; }
+
+        public MediasLookupDTO? Medias { get; set; }
+    }
+
     public class CreateStoryDTO
     {
         [Required(ErrorMessage = "Title is required")]
@@ -35,6 +48,11 @@ namespace TimelineService.DTOs
         public List<ImageDTO>? Images { get; set; }
     }
 
+    public class MediasLookupDTO
+    {
+        public List<ImageLookupDTO>? Images { get; set; }
+    }
+
     public class ImageDTO
     {
         [Required(ErrorMessage = "Image name is required")]
@@ -46,5 +64,15 @@ namespace TimelineService.DTOs
 
         [Required(ErrorMessage = "Image Data is required")]
         public required string Data {get; set; }    
+    }
+
+    public class ImageLookupDTO
+    {
+        [Required(ErrorMessage = "Image name is required")]
+        [StringLength(maximumLength: 20, MinimumLength = 1)]
+        public required string Name { get; set; }
+
+        [Required(ErrorMessage = "Image Data is required")]
+        public required string Data { get; set; }
     }
 }

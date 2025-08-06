@@ -17,7 +17,7 @@ builder.Services.LoadMongoDbSettings(builder.Configuration);
 builder.Services.CreateMongoClientInstance(builder.Configuration);
 builder.Services.AddSingleton<AppMongoRepository>();
 builder.Services.AddCloudinaryServiceAsSingleton(builder.Configuration);
-builder.Services.AddScoped<IImageUploadService, ImageUploadService>();
+builder.Services.AddScoped<IImageService, ImageService>();
 builder.Services.AddSingleton<ISortHelper<Timeline>, SortHelper<Timeline>>();
 builder.Services.AddScoped<ITimelineService, TimelineService.Services.TimelineService>();
 builder.Services.AddScoped<IStoryService, StoryService>();
@@ -25,30 +25,30 @@ builder.Services.AddScoped<IStoryService, StoryService>();
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen(setup =>
-{
-    var jwtSecurityScheme = new OpenApiSecurityScheme
-    {
-        BearerFormat = "JWT",
-        Name = "JWT Authentication",
-        In = ParameterLocation.Header,
-        Type = SecuritySchemeType.Http,
-        Scheme = JwtBearerDefaults.AuthenticationScheme,
-        Description = "Put only your jwt bearer token",
+//builder.Services.AddSwaggerGen(setup =>
+//{
+//    var jwtSecurityScheme = new OpenApiSecurityScheme
+//    {
+//        BearerFormat = "JWT",
+//        Name = "JWT Authentication",
+//        In = ParameterLocation.Header,
+//        Type = SecuritySchemeType.Http,
+//        Scheme = JwtBearerDefaults.AuthenticationScheme,
+//        Description = "Put only your jwt bearer token",
 
-        Reference = new OpenApiReference()
-        {
-            Id = JwtBearerDefaults.AuthenticationScheme,
-            Type = ReferenceType.SecurityScheme
-        }
-    };
+//        Reference = new OpenApiReference()
+//        {
+//            Id = JwtBearerDefaults.AuthenticationScheme,
+//            Type = ReferenceType.SecurityScheme
+//        }
+//    };
 
-    setup.AddSecurityDefinition(jwtSecurityScheme.Reference.Id, jwtSecurityScheme);
-    setup.AddSecurityRequirement(new OpenApiSecurityRequirement()
-    {
-        { jwtSecurityScheme, Array.Empty<string>() }
-    });
-});
+//    setup.AddSecurityDefinition(jwtSecurityScheme.Reference.Id, jwtSecurityScheme);
+//    setup.AddSecurityRequirement(new OpenApiSecurityRequirement()
+//    {
+//        { jwtSecurityScheme, Array.Empty<string>() }
+//    });
+//});
 
 var app = builder.Build();
 

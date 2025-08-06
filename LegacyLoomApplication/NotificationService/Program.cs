@@ -17,7 +17,7 @@ builder.Services.AddAutoMapper(typeof(NotificationMapper));
 builder.Services.AddScoped<INotificationSender, NotificationSender>();
 builder.Services.AddScoped<INotificationService, NotificationService.Services.NotificationService>();
 builder.Services.AddSingleton<ISortHelper<Notification>, SortHelper<Notification>>();
-builder.Services.AddMassTransitRegistrationForConsumer();
+builder.Services.AddMassTransitRegistrationForConsumer(builder.Configuration);
 builder.Services.Configure<NotificationDbSettings>(
         builder.Configuration.GetSection("NotificationDbSettings")
     );

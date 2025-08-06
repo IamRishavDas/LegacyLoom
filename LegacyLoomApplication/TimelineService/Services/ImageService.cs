@@ -4,14 +4,14 @@ using TimelineService.Models;
 
 namespace TimelineService.Services
 {
-    public class ImageUploadService : IImageUploadService
+    public class ImageService : IImageService
     {
 
         private readonly Cloudinary _cloudinary;
         private readonly string _imageUploadDestination;
         private readonly string _maxImageUploadSizeInMB;
 
-        public ImageUploadService(Cloudinary cloudinary, IConfiguration configuration)
+        public ImageService(Cloudinary cloudinary, IConfiguration configuration)
         {
             _cloudinary = cloudinary;
             _imageUploadDestination = configuration["Cloudinary:ImageUploadDestination"] ?? throw new ArgumentNullException("Image upload destination not found!");
@@ -73,6 +73,54 @@ namespace TimelineService.Services
             {
                 Console.WriteLine(ex.Message);
                 return new List<ImageUplaodResult>();
+            }
+        }
+
+        public async Task<IList<ImageDeletionResult>> DeleteImagesAsync(IList<string> publicIds)
+        {
+            try
+            {
+                if (publicIds == null || publicIds.Count == 0)
+                {
+                    throw new Exception("No public ids are given for delete");
+                }
+
+                var deletionResults = new List<ImageDeletionResult>(publicIds.Count);
+
+                foreach(var publicId in publicIds)
+                {
+                    try
+                    {
+                        var deletionParams = new DeletionParams(publicId)
+                        {
+                            ResourceType = ResourceType.Image
+                        };
+
+                        var deletionResult = await _cloudinary.DestroyAsync(deletionParams);
+                        deletionResults.Add(new ImageDeletionResult()
+                        {
+                            PublicId = publicId,
+                            Status = deletionResult.Result == "ok" ? ImageDeletionStatus.DELETED : ImageDeletionStatus.NOT_FOUND,
+                            ErrorMessage = deletionResult.Result != "ok" ? deletionResult.Error?.Message : "Error while deleting image"
+                        });
+                    }
+                    catch (Exception ex)
+                    {
+                        deletionResults.Add(new ImageDeletionResult
+                        {
+                            PublicId = publicId,
+                            Status = ImageDeletionStatus.FAILED,
+                            ErrorMessage = ex.Message
+                        });
+                    }
+                }
+
+                return deletionResults;
+            }
+            catch (Exception ex)
+            {
+
+                return new List<ImageDeletionResult> { new ImageDeletionResult { PublicId = "", Status = ImageDeletionStatus.FAILED, ErrorMessage = ex.Message } };
             }
         }
     }

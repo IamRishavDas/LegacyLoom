@@ -23,7 +23,7 @@ builder.Services.AddScoped<AuthenticationTokenProvider>();
 builder.Services.AddSingleton<PasswordHasher>();
 builder.Services.AddAutoMapper(typeof(UserMapper));
 builder.Services.AddSingleton<ISortHelper<User>, SortHelper<User>>();
-builder.Services.AddMassTransitConfigurations();
+builder.Services.AddMassTransitConfigurations(builder.Configuration);
 builder.Services.AddDbContext<UserDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("UserDb"))
     );
