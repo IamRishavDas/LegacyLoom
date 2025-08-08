@@ -27,6 +27,11 @@ namespace TimelineService.Services
                     throw new Exception("No files are there for upload");
                 }
 
+                if(files.Count > 4)
+                {
+                    throw new Exception("Maximum 4 images are allowed");
+                }
+
                 var allowedExtensions = new[] { ".jpg", ".jpeg", ".png", ".gif" };
                 var maxFileSize = int.Parse(_maxImageUploadSizeInMB) * 1024 * 1024;
                 var uploadResults = new List<ImageUplaodResult>();

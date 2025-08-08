@@ -438,9 +438,9 @@ namespace TimelineService.Services
                 var images = new List<Image>();
                 if (files != null && files.Count != 0)
                 {
-                    if(files.Count > 5)
+                    if(files.Count > 4)
                     {
-                        return ServiceResponse<TimelineDTO>.Failure("You can upload 5 images", (int)HttpStatusCode.BadRequest);
+                        return ServiceResponse<TimelineDTO>.Failure("You can upload 4 images", (int)HttpStatusCode.BadRequest);
                     }
                     var results = await _imageService.UploadImagesAsync(files);
                     if (results == null || results.Count == 0) throw new Exception("There are some problem while uploading medias, try again later");
