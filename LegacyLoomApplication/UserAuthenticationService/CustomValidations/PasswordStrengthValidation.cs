@@ -15,7 +15,7 @@ namespace UserAuthenticationService.CustomValidations
             }
 
             // Password must be at least 8 characters, include an uppercase letter, a number, and a special character.
-            var regex = new Regex(@"^(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$");
+            var regex = new Regex(@"^(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&#])[A-Za-z\d@$!%*?&#]{8,}$");
             if (!regex.IsMatch(password))
             {
                 return new ValidationResult("Password must be at least 8 characters long, include an uppercase letter, a number, and a special character.");

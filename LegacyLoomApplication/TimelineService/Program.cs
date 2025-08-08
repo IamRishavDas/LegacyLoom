@@ -1,12 +1,12 @@
 using AuthenticationManager;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.OpenApi.Models;
 using RequestFeatureShared.SortHelper;
 using TimelineService.Extensions;
 using TimelineService.MappingConfiguration;
 using TimelineService.Models;
 using TimelineService.MongoRepository;
 using TimelineService.Services;
+//using Microsoft.AspNetCore.Authentication.JwtBearer;
+//using Microsoft.OpenApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -25,6 +25,7 @@ builder.Services.AddScoped<IStoryService, StoryService>();
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
 //builder.Services.AddSwaggerGen(setup =>
 //{
 //    var jwtSecurityScheme = new OpenApiSecurityScheme

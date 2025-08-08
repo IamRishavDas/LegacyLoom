@@ -89,6 +89,14 @@ namespace TimelineService.Services
                 var pagedListTimelines = PagedList<Timeline>.ToPagedList(result, count, timelineRequestParameters.PageNumber, timelineRequestParameters.PageSize);
                 var listOfTimeline = _mapper.Map<IEnumerable<Timeline>>(pagedListTimelines);
                 var listOfTimelineDto = _mapper.Map<List<TimelineDTO>>(listOfTimeline);
+
+                
+                for (int i = 0; i < result.Count; i++)
+                {
+                    listOfTimelineDto[i].IsLikedByMe = result[i].Likes == null ? false : result[i].Likes.Contains(userId);
+                    listOfTimelineDto[i].IsDislikedByMe = result[i].Dislikes == null ? false : result[i].Dislikes.Contains(userId);
+                }
+
                 return
                     (
                         ServiceResponse<IEnumerable<TimelineDTO>>.SuccessResult(listOfTimelineDto, (int)HttpStatusCode.OK),
@@ -123,11 +131,19 @@ namespace TimelineService.Services
                 var result = orderedTimelines.Skip(((timelineRequestParameters.PageNumber - 1) * timelineRequestParameters.PageSize)).Take(timelineRequestParameters.PageSize).ToList();
 
                 var pagedListTimelines = PagedList<Timeline>.ToPagedList(result, count, timelineRequestParameters.PageNumber, timelineRequestParameters.PageSize);
+                var timelineDTOs = _mapper.Map<List<TimelineLookupDTO>>(pagedListTimelines);
+
+                for (int i = 0; i < result.Count; i++)
+                {
+                    timelineDTOs[i].IsLikedByMe = result[i].Likes == null ? false : result[i].Likes.Contains(userId);
+                    timelineDTOs[i].IsDislikedByMe = result[i].Dislikes == null ? false : result[i].Dislikes.Contains(userId);
+                }
+
                 return
                     (
                         ServiceResponse<IEnumerable<TimelineLookupDTO>>.SuccessResult
                         (
-                            _mapper.Map<IEnumerable<TimelineLookupDTO>>(pagedListTimelines),
+                            timelineDTOs,
                             (int)HttpStatusCode.OK
                         ),
                         pagedListTimelines.MetaData
@@ -143,7 +159,7 @@ namespace TimelineService.Services
             }
         }
 
-        public async Task<ServiceResponse<TimelineDTO>> GetPublicTimelineByTimelineId(string timelineId)
+        public async Task<ServiceResponse<TimelineDTO>> GetPublicTimelineByTimelineId(string timelineId, string? userId)
         {
             try
             {
@@ -151,6 +167,12 @@ namespace TimelineService.Services
                 {
                     return ServiceResponse<TimelineDTO>.Failure("Invalid timeline id", (int)HttpStatusCode.BadRequest);
                 }
+
+                if(userId == null || !Guid.TryParse(userId, out Guid _userId))
+                {
+                    return ServiceResponse<TimelineDTO>.Failure("Invalid user id", (int)HttpStatusCode.BadRequest);
+                }
+
                 var _timelineCollection = await _mongoRepository.GetTimelineCollectionContext();
                 var timeline = await _timelineCollection.Find(timeline => timeline.Id == timelineId && timeline.Visibility != TimelineVisibility.PRIVATE && !timeline.IsDeleted).FirstOrDefaultAsync();
                 if(timeline == null)
@@ -159,6 +181,10 @@ namespace TimelineService.Services
                 }
 
                 var timelineDTO = _mapper.Map<TimelineDTO>(timeline);
+
+                timelineDTO.IsLikedByMe = timeline.Likes == null ? false : timeline.Likes.Contains(userId);
+                timelineDTO.IsDislikedByMe = timeline.Dislikes == null ? false : timeline.Dislikes.Contains(userId);
+
                 return ServiceResponse<TimelineDTO>.SuccessResult(timelineDTO, (int)HttpStatusCode.OK);
             }
             catch (Exception ex)
@@ -412,9 +438,9 @@ namespace TimelineService.Services
                 var images = new List<Image>();
                 if (files != null && files.Count != 0)
                 {
-                    if(files.Count > 5)
+                    if(files.Count > 4)
                     {
-                        return ServiceResponse<TimelineDTO>.Failure("You can upload 5 images", (int)HttpStatusCode.BadRequest);
+                        return ServiceResponse<TimelineDTO>.Failure("You can upload 4 images", (int)HttpStatusCode.BadRequest);
                     }
                     var results = await _imageService.UploadImagesAsync(files);
                     if (results == null || results.Count == 0) throw new Exception("There are some problem while uploading medias, try again later");
@@ -446,7 +472,9 @@ namespace TimelineService.Services
                 {
                     Id = ObjectId.GenerateNewId().ToString(),
                     CreatedBy = createdBy,
-                    Story = story
+                    Story = story,
+                    Likes = new HashSet<string>(),
+                    Dislikes = new HashSet<string>()
                 };
                 await _timelineCollection.InsertOneAsync(timeline);
                 return ServiceResponse<TimelineDTO>.SuccessResult(_mapper.Map<TimelineDTO>(timeline), (int)HttpStatusCode.Created);
@@ -574,11 +602,253 @@ namespace TimelineService.Services
                     return ServiceResponse<TimelineDTO>.Failure("No timeline found", (int)HttpStatusCode.NotFound);
                 }
 
-                return ServiceResponse<TimelineDTO>.SuccessResult(_mapper.Map<TimelineDTO>(timeline), (int)HttpStatusCode.OK);
+                var timelineDTO = _mapper.Map<TimelineDTO>(timeline);
+
+                timelineDTO.IsLikedByMe = timeline.Likes == null ? false : timeline.Likes.Contains(userId);
+                timelineDTO.IsDislikedByMe = timeline.Dislikes == null ? false : timeline.Dislikes.Contains(userId);
+
+                return ServiceResponse<TimelineDTO>.SuccessResult(timelineDTO, (int)HttpStatusCode.OK);
             }
             catch (Exception ex)
             {
                 return ServiceResponse<TimelineDTO>.Failure("Error while finding the timelien try after some time", new List<string>() {ex.Message}, (int)HttpStatusCode.InternalServerError);
+            }
+        }
+
+        //public async Task<ServiceResponse<bool>> LikeToggle(string? userId, string timelineId)
+        //{
+        //    try
+        //    {
+        //        if (userId == null || !Guid.TryParse(userId, out Guid _userId) || !ObjectId.TryParse(timelineId, out ObjectId _id))
+        //        {
+        //            return ServiceResponse<bool>.Failure("Not a valid timeline id or user id", (int)HttpStatusCode.BadRequest);
+        //        }
+
+        //        var _timelineCollection = await _mongoRepository.GetTimelineCollectionContext();
+        //        var timeline = await _timelineCollection.Find(timeline => timeline.Id == timelineId && !timeline.IsDeleted).FirstOrDefaultAsync();
+
+        //        if (timeline == null)
+        //        {
+        //            return ServiceResponse<bool>.Failure("No timeline found", (int)HttpStatusCode.NotFound);
+        //        }
+
+        //        // the response in the boolean state represent wheather the timeline is liked or not
+        //        if(timeline.Likes != null)
+        //        {
+        //            if (timeline.Likes.Contains(userId))
+        //            {
+        //                timeline.Likes.Remove(userId);
+        //                var replaceOneResult = await _timelineCollection.ReplaceOneAsync(timeline => timeline.Id == timelineId, timeline);
+        //                return ServiceResponse<bool>.SuccessResult(false, (int)HttpStatusCode.OK);
+        //            } 
+        //            else
+        //            {
+        //                if(timeline.Dislikes != null && timeline.Dislikes.Contains(userId))
+        //                {
+        //                    timeline.Dislikes.Remove(userId);
+        //                }
+        //                timeline.Likes.Add(userId);
+        //                var replaceOneResult = await _timelineCollection.ReplaceOneAsync(timeline => timeline.Id == timelineId, timeline);
+        //                return ServiceResponse<bool>.SuccessResult(true, (int)HttpStatusCode.OK);
+        //            }
+        //        }
+        //        else
+        //        {
+        //            if (timeline.Dislikes != null && timeline.Dislikes.Contains(userId))
+        //            {
+        //                timeline.Dislikes.Remove(userId);
+        //            }
+        //            timeline.Likes = new HashSet<string>();
+        //            timeline.Likes.Add(userId);
+        //            var replaceOneResult = await _timelineCollection.ReplaceOneAsync(timeline => timeline.Id == timelineId, timeline);
+        //            return ServiceResponse<bool>.SuccessResult(true, (int)HttpStatusCode.OK);
+        //        }
+
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        return ServiceResponse<bool>.Failure("Error while finding the timelien try after some time", new List<string>() { ex.Message }, (int)HttpStatusCode.InternalServerError);
+        //    }
+        //}
+
+        //public async Task<ServiceResponse<bool>> DislikeToggle(string? userId, string timelineId)
+        //{
+        //    try
+        //    {
+        //        if (userId == null || !Guid.TryParse(userId, out Guid _userId) || !ObjectId.TryParse(timelineId, out ObjectId _id))
+        //        {
+        //            return ServiceResponse<bool>.Failure("Not a valid timeline id or user id", (int)HttpStatusCode.BadRequest);
+        //        }
+
+        //        var _timelineCollection = await _mongoRepository.GetTimelineCollectionContext();
+        //        var timeline = await _timelineCollection.Find(timeline => timeline.Id == timelineId && !timeline.IsDeleted).FirstOrDefaultAsync();
+
+        //        if (timeline == null)
+        //        {
+        //            return ServiceResponse<bool>.Failure("No timeline found", (int)HttpStatusCode.NotFound);
+        //        }
+
+        //        // the response in the boolean state represent wheather the timeline is disliked or not
+        //        if(timeline.Dislikes != null)
+        //        {
+        //            if (timeline.Dislikes.Contains(userId))
+        //            {
+        //                timeline.Dislikes.Remove(userId);
+        //                var replaceOneResult = await _timelineCollection.ReplaceOneAsync(timeline => timeline.Id == timelineId, timeline);
+
+        //                return ServiceResponse<bool>.SuccessResult(false, (int)HttpStatusCode.OK);
+        //            }
+        //            else
+        //            {
+        //                if(timeline.Likes != null && timeline.Likes.Contains(userId))
+        //                {
+        //                    timeline.Likes.Remove(userId);
+        //                }
+        //                timeline.Dislikes.Add(userId);
+        //                var replaceOneResult = await _timelineCollection.ReplaceOneAsync(timeline => timeline.Id == timelineId, timeline);
+
+        //                return ServiceResponse<bool>.SuccessResult(true, (int)HttpStatusCode.OK);
+        //            }
+        //        }
+        //        else
+        //        {
+        //            if (timeline.Likes != null && timeline.Likes.Contains(userId))
+        //            {
+        //                timeline.Likes.Remove(userId);
+        //            }
+        //            timeline.Dislikes = new HashSet<string>();
+        //            timeline.Dislikes.Add(userId);
+        //            var replaceOneResult = await _timelineCollection.ReplaceOneAsync(timeline => timeline.Id == timelineId, timeline);
+
+        //            return ServiceResponse<bool>.SuccessResult(true, (int)HttpStatusCode.OK);
+        //        }
+                
+
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        return ServiceResponse<bool>.Failure("Error while finding the timelien try after some time", new List<string>() { ex.Message }, (int)HttpStatusCode.InternalServerError);
+        //    }
+        //}
+
+
+        public async Task<ServiceResponse<LikeResponse>> LikeToggle(string? userId, string timelineId)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(userId) || !Guid.TryParse(userId, out Guid _userId) || !ObjectId.TryParse(timelineId, out ObjectId _id))
+                {
+                    return ServiceResponse<LikeResponse>.Failure("Not a valid timeline id or user id", (int)HttpStatusCode.BadRequest);
+                }
+
+                var _timelineCollection = await _mongoRepository.GetTimelineCollectionContext();
+                var timeline = await _timelineCollection.Find(t => t.Id == timelineId && !t.IsDeleted).FirstOrDefaultAsync();
+
+                if (timeline == null)
+                {
+                    return ServiceResponse<LikeResponse>.Failure("No timeline found", (int)HttpStatusCode.NotFound);
+                }
+
+                timeline.Likes = timeline.Likes ?? new HashSet<string>();
+                timeline.Dislikes = timeline.Dislikes ?? new HashSet<string>();
+
+                bool isLiked = timeline.Likes.Contains(userId);
+                var updateBuilder = Builders<Timeline>.Update;
+
+                if (isLiked)
+                {
+                    // Unlike: Remove user from Likes
+                    var update = updateBuilder.Pull(t => t.Likes, userId);
+                    await _timelineCollection.UpdateOneAsync(t => t.Id == timelineId, update);
+                }
+                else
+                {
+                    // Like: Add user to Likes, remove from Dislikes
+                    var update = updateBuilder
+                        .AddToSet(t => t.Likes, userId)
+                        .Pull(t => t.Dislikes, userId);
+                    await _timelineCollection.UpdateOneAsync(t => t.Id == timelineId, update);
+                }
+
+                // Fetch updated timeline to get accurate counts
+                var updatedTimeline = await _timelineCollection.Find(t => t.Id == timelineId).FirstOrDefaultAsync();
+                return ServiceResponse<LikeResponse>.SuccessResult(
+                    new LikeResponse
+                    {
+                        IsLiked = !isLiked,
+                        Likes = updatedTimeline.Likes?.Count ?? 0,
+                        Dislikes = updatedTimeline.Dislikes?.Count ?? 0
+                    },
+                    (int)HttpStatusCode.OK
+                );
+            }
+            catch (Exception ex)
+            {
+                return ServiceResponse<LikeResponse>.Failure(
+                    "Error while updating the timeline, try again later",
+                    new List<string> { ex.Message },
+                    (int)HttpStatusCode.InternalServerError
+                );
+            }
+        }
+
+        public async Task<ServiceResponse<DislikeResponse>> DislikeToggle(string? userId, string timelineId)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(userId) || !Guid.TryParse(userId, out Guid _userId) || !ObjectId.TryParse(timelineId, out ObjectId _id))
+                {
+                    return ServiceResponse<DislikeResponse>.Failure("Not a valid timeline id or user id", (int)HttpStatusCode.BadRequest);
+                }
+
+                var _timelineCollection = await _mongoRepository.GetTimelineCollectionContext();
+                var timeline = await _timelineCollection.Find(t => t.Id == timelineId && !t.IsDeleted).FirstOrDefaultAsync();
+
+                if (timeline == null)
+                {
+                    return ServiceResponse<DislikeResponse>.Failure("No timeline found", (int)HttpStatusCode.NotFound);
+                }
+
+                timeline.Likes = timeline.Likes ?? new HashSet<string>();
+                timeline.Dislikes = timeline.Dislikes ?? new HashSet<string>();
+
+                bool isDisliked = timeline.Dislikes.Contains(userId);
+                var updateBuilder = Builders<Timeline>.Update;
+
+                if (isDisliked)
+                {
+                    // Undislike: Remove user from Dislikes
+                    var update = updateBuilder.Pull(t => t.Dislikes, userId);
+                    await _timelineCollection.UpdateOneAsync(t => t.Id == timelineId, update);
+                }
+                else
+                {
+                    // Dislike: Add user to Dislikes, remove from Likes
+                    var update = updateBuilder
+                        .AddToSet(t => t.Dislikes, userId)
+                        .Pull(t => t.Likes, userId);
+                    await _timelineCollection.UpdateOneAsync(t => t.Id == timelineId, update);
+                }
+
+                // Fetch updated timeline to get accurate counts
+                var updatedTimeline = await _timelineCollection.Find(t => t.Id == timelineId).FirstOrDefaultAsync();
+                return ServiceResponse<DislikeResponse>.SuccessResult(
+                    new DislikeResponse
+                    {
+                        IsDisliked = !isDisliked,
+                        Likes = updatedTimeline.Likes?.Count ?? 0,
+                        Dislikes = updatedTimeline.Dislikes?.Count ?? 0
+                    },
+                    (int)HttpStatusCode.OK
+                );
+            }
+            catch (Exception ex)
+            {
+                return ServiceResponse<DislikeResponse>.Failure(
+                    "Error while updating the timeline, try again later",
+                    new List<string> { ex.Message },
+                    (int)HttpStatusCode.InternalServerError
+                );
             }
         }
     }
