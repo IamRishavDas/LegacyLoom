@@ -15,7 +15,8 @@ namespace TimelineService.Models
 
         [Required(ErrorMessage = "User id is required")]
         public required string CreatedBy { get; set; } // should be a Guid value
-
+        public required HashSet<string> Likes { get; set; } // should be a list of Guid value
+        public required HashSet<string> Dislikes { get; set; } // should be a list of Guid value
         public List<string>? SharedWith { get; set; }  // should be a Guid value
 
         [Required]

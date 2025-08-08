@@ -110,12 +110,72 @@
     },
 
     {
+      "DownstreamPathTemplate": "/api/timelines/like",
+      "DownstreamScheme": "https",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "timelineservice20250805023746-e3eccvh4c6btftes.canadacentral-01.azurewebsites.net",
+          "Port": 443
+          //"Host": "localhost",
+          //"Port": 7175
+        }
+      ],
+      "UpstreamPathTemplate": "/gateway/api/timelines/like",
+      "UpstreamHttpMethod": [ "POST" ],
+      "RateLimitOptions": {
+        "EnableRateLimiting": true,
+        "Period": "20s",
+        "Limit": 10,
+        "PeriodTimespan": 10,
+        "ClientIdHeader": "Authorization"
+      },
+      "FileCacheOptions": {
+        "TtlSeconds": 0
+      },
+      "AuthenticationOptions": {
+        "AuthenticationProviderKey": "Bearer",
+        "AllowedScopes": []
+      }
+    },
+
+    {
+      "DownstreamPathTemplate": "/api/timelines/dislike",
+      "DownstreamScheme": "https",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "timelineservice20250805023746-e3eccvh4c6btftes.canadacentral-01.azurewebsites.net",
+          "Port": 443
+          //"Host": "localhost",
+          //"Port": 7175
+        }
+      ],
+      "UpstreamPathTemplate": "/gateway/api/timelines/dislike",
+      "UpstreamHttpMethod": [ "POST" ],
+      "RateLimitOptions": {
+        "EnableRateLimiting": true,
+        "Period": "20s",
+        "Limit": 10,
+        "PeriodTimespan": 10,
+        "ClientIdHeader": "Authorization"
+      },
+      "FileCacheOptions": {
+        "TtlSeconds": 0
+      },
+      "AuthenticationOptions": {
+        "AuthenticationProviderKey": "Bearer",
+        "AllowedScopes": []
+      }
+    },
+
+    {
       "DownstreamPathTemplate": "/api/timelines/{everything}",
       "DownstreamScheme": "https",
       "DownstreamHostAndPorts": [
         {
           "Host": "timelineservice20250805023746-e3eccvh4c6btftes.canadacentral-01.azurewebsites.net",
           "Port": 443
+          //"Host": "localhost",
+          //"Port": 7175
         }
       ],
       "UpstreamPathTemplate": "/gateway/api/timelines/{everything}",

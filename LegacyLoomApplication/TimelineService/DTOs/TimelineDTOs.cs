@@ -15,6 +15,10 @@ namespace TimelineService.DTOs
         public required string Id {get; set;}
         public required StoryDTO StoryDTO { get; set; }
         public Guid CreatedBy {get; set;}
+        public required long Likes { get; set; }
+        public bool? IsLikedByMe { get; set; } = false;
+        public required long Dislikes { get; set; }
+        public bool? IsDislikedByMe { get; set; } = false;
         public List<Guid>? SharedWith {get; set;}
         public required string Visibility {get; set;}
         public DateTime CreatedAt {get; set;}
@@ -26,6 +30,10 @@ namespace TimelineService.DTOs
         public required string Id { get; set; }
         public required StoryLookupDTO StoryDTO { get; set; }
         public required Guid CreatedBy { get; set; }
+        public required long Likes { get; set; }
+        public bool? IsLikedByMe { get; set; } = false;
+        public required long Dislikes { get; set; }
+        public bool? IsDislikedByMe { get; set; } = false;
         public required DateTime LastModified { get; set; }
     }
 }

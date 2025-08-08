@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using RequestFeatureShared.Constants;
+using ServiceResponseShared;
 using System.Text.Json;
 using TimelineService.DTOs;
 using TimelineService.Models;
@@ -79,7 +80,8 @@ namespace TimelineService.Controllers
         [Authorize(Roles = "User,Moderator,Admin")]
         public async Task<ActionResult<TimelineDTO>> GetPublicTimelineByTimelineId([FromRoute] string id)
         {
-            var response = await _timelineService.GetPublicTimelineByTimelineId(id);
+            var userId = User.FindFirst("UserId")?.Value;
+            var response = await _timelineService.GetPublicTimelineByTimelineId(id, userId);
             return StatusCode(response.StatusCode, response);
         }
         
@@ -159,6 +161,24 @@ namespace TimelineService.Controllers
         public async Task<IActionResult> PermanentDeleteAllUserDeletedTimelines()
         {
             var response = await _timelineService.DeleteAllUserDeletedTimelines();
+            return StatusCode(response.StatusCode, response);
+        }
+
+        [HttpPost("like")]
+        [Authorize(Roles = "User")]
+        public async Task<ActionResult<ServiceResponse<LikeResponse>>> LikeTimeline(string timelineId)
+        {
+            var userId = User.FindFirst("UserId")?.Value;
+            var response = await _timelineService.LikeToggle(userId, timelineId);
+            return StatusCode(response.StatusCode, response);
+        }
+
+        [HttpPost("dislike")]
+        [Authorize(Roles = "User")]
+        public async Task<ActionResult<ServiceResponse<DislikeResponse>>> DislikeTimeline(string timelineId)
+        {
+            var userId = User.FindFirst("UserId")?.Value;
+            var response = await _timelineService.DislikeToggle(userId, timelineId);
             return StatusCode(response.StatusCode, response);
         }
     }

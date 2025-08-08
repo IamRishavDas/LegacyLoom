@@ -87,10 +87,23 @@ namespace TimelineService.MappingConfiguration
                 )
                 .ForMember(dest => dest.StoryDTO,
                     s => s.MapFrom(src => ToStoryDTO(src.Story))
+                )
+                .ForMember(dest=> dest.Likes,
+                    s => s.MapFrom(src => src.Likes.Count)
+                )
+                .ForMember(dest=> dest.Dislikes,
+                    s => s.MapFrom(src => src.Dislikes.Count)
                 );
+
             CreateMap<Timeline, TimelineLookupDTO>()
                 .ForMember(dest => dest.StoryDTO,
-                    s => s.MapFrom(src => ToStoryLookupDTO(src.Story)));
+                    s => s.MapFrom(src => ToStoryLookupDTO(src.Story)))
+                .ForMember(dest => dest.Likes,
+                    s => s.MapFrom(src => src.Likes.Count)
+                )
+                .ForMember(dest => dest.Dislikes,
+                    s => s.MapFrom(src => src.Dislikes.Count)
+                );
         }
     }
 }
