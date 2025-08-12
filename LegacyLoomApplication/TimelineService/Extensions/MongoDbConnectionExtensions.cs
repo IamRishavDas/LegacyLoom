@@ -10,6 +10,10 @@ namespace TimelineService.Extensions
             services.Configure<TimelineDbSettings>(
                 configuration.GetSection("TimelineDatabaseSettings")
             );
+
+            services.Configure<TimelineDraftDbSettings>(
+                configuration.GetSection("TimelineDraftDatabaseSettings")
+            );
         }
 
         public static void CreateMongoClientInstance(this IServiceCollection services, IConfiguration configuration)

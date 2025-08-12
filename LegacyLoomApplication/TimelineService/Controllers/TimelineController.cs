@@ -4,7 +4,6 @@ using RequestFeatureShared.Constants;
 using ServiceResponseShared;
 using System.Text.Json;
 using TimelineService.DTOs;
-using TimelineService.Models;
 using TimelineService.RequestFeatures;
 using TimelineService.Services;
 

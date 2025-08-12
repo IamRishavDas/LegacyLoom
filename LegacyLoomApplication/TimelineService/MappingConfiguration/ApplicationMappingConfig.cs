@@ -71,6 +71,7 @@ namespace TimelineService.MappingConfiguration
             return mediasLookupDTO;
         }
 
+
         public ApplicationMappingConfig()
         {
             CreateMap<Image, ImageDTO>();
@@ -103,6 +104,12 @@ namespace TimelineService.MappingConfiguration
                 )
                 .ForMember(dest => dest.Dislikes,
                     s => s.MapFrom(src => src.Dislikes.Count)
+                );
+
+            CreateMap<TimelineDraft, TimelineDraftDTO>();
+            CreateMap<TimelineDraft, TimelineDraftLookupDTO>()
+                .ForMember(dest => dest.Content,
+                    s => s.MapFrom(src => src.Content != null ? new String(src.Content.Take(150).ToArray()) : src.Content) 
                 );
         }
     }

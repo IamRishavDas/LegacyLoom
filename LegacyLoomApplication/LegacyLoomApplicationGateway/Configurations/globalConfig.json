@@ -197,6 +197,38 @@
         "AuthenticationProviderKey": "Bearer",
         "AllowedScopes": []
       }
+    },
+
+    {
+      "DownstreamPathTemplate": "/api/drafts/{everything}",
+      "DownstreamScheme": "https",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "timelineservice20250805023746-e3eccvh4c6btftes.canadacentral-01.azurewebsites.net",
+          "Port": 443
+          //"Host": "localhost",
+          //"Port": 7175
+        }
+      ],
+      "UpstreamPathTemplate": "/gateway/api/drafts/{everything}",
+      "UpstreamHttpMethod": [ "GET", "POST", "PUT", "DELETE", "PATCH" ],
+
+      "RateLimitOptions": {
+        "EnableRateLimiting": true,
+        "Period": "20s",
+        "Limit": 10,
+        "PeriodTimespan": 10,
+        "ClientIdHeader": "Authorization"
+      },
+
+      "FileCacheOptions": {
+        "TtlSeconds": 10
+      },
+
+      "AuthenticationOptions": {
+        "AuthenticationProviderKey": "Bearer",
+        "AllowedScopes": []
+      }
     }
   ],
   "GlobalConfiguration": {
