@@ -19,7 +19,9 @@ builder.Services.AddSingleton<AppMongoRepository>();
 builder.Services.AddCloudinaryServiceAsSingleton(builder.Configuration);
 builder.Services.AddScoped<IImageService, ImageService>();
 builder.Services.AddSingleton<ISortHelper<Timeline>, SortHelper<Timeline>>();
+builder.Services.AddSingleton<ISortHelper<TimelineDraft>, SortHelper<TimelineDraft>>();
 builder.Services.AddScoped<ITimelineService, TimelineService.Services.TimelineService>();
+builder.Services.AddScoped<ITimelineDraftService, TimelineDraftService>();
 builder.Services.AddScoped<IStoryService, StoryService>();
 
 builder.Services.AddControllers();
