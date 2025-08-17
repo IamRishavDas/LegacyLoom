@@ -49,7 +49,7 @@ namespace TimelineService.Controllers
 
         [HttpPut("{id}")]
         [Authorize(Roles = "User")]
-        public async Task<ActionResult<TimelineDraftDTO>> UpdateDraft([FromRoute]string id, [FromBody]UpdateTimelineDraft updateTimelineDraft)
+        public async Task<ActionResult<TimelineDraftDTO>> UpdateDraft([FromRoute]string id, [FromForm]UpdateTimelineDraft updateTimelineDraft)
         {
             var userId = User.FindFirst("UserId")?.Value;
             var response = await _draftService.UpdateDraft(userId, id, updateTimelineDraft);
