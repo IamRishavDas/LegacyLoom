@@ -27,6 +27,13 @@ namespace UserAuthenticationService.Models
 
         public Role Role { get; set; } = Role.User;
 
+        public string? ProfilePicture { get; set; }
+
+        [StringLength(maximumLength: 6, MinimumLength = 6, ErrorMessage = "OTP length must be 6")]
+        public string? LastForgotPasswordOTP { get; set; }
+
+        public DateTime? OTPExpirationTime { get; set; }
+
         public bool IsDeleted { get; set; } = false;
     }
 }

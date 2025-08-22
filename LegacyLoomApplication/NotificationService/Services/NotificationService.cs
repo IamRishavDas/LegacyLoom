@@ -130,7 +130,7 @@ namespace NotificationService.Services
 
         public async Task<ServiceResponse<string>> Update(string id, Notification notification)
         {
-            //await _notificationCollection.ReplaceOneAsync(s => s.Id == id, notification);
+            await Task.Yield();
             return ServiceResponse<string>.SuccessResult("This feature is not available currently", (int)HttpStatusCode.OK);
         }
     }

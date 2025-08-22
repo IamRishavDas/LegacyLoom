@@ -72,7 +72,7 @@ namespace UserAuthenticationService.Repositories
 
             var count = await results.CountAsync();
             var users = await results
-                .Skip((userRequestParams.PageNumber - 1) * userRequestParams.PageSize)
+                .Skip((userRequestParams.PageNumber - 1) * userRequestParams.PageSize).Take(userRequestParams.PageSize)
                 .ToListAsync();
             return PagedList<User>.ToPagedList(sortedUsers, count, userRequestParams.PageNumber, userRequestParams.PageSize);
         }
@@ -101,7 +101,7 @@ namespace UserAuthenticationService.Repositories
             results = SearchByName(results, userRequestParams.Name);
             var count = await results.CountAsync();
             var users = await results
-                .Skip((userRequestParams.PageNumber - 1) * userRequestParams.PageSize)
+                .Skip((userRequestParams.PageNumber - 1) * userRequestParams.PageSize).Take(userRequestParams.PageSize)
                 .ToListAsync();
             return PagedList<User>.ToPagedList(users, count, userRequestParams.PageNumber, userRequestParams.PageSize);
 
@@ -112,6 +112,41 @@ namespace UserAuthenticationService.Repositories
             if (!users.Any() || string.IsNullOrWhiteSpace(searchName)) return users;
             var searchedUsers = users.Where(user => user.Username.ToLower().Contains(searchName.Trim().ToLower()));
             return searchedUsers;
+        }
+
+        public async Task<User?> InsertForgotPasswordOTPandExpirationTime(Guid userId, string otp)
+        {
+            var user = await _userDbContext.Users.FindAsync(userId);
+
+            if (user == null) return null;
+
+            user.LastForgotPasswordOTP = otp;
+            user.OTPExpirationTime = DateTime.UtcNow.AddMinutes(5);
+
+            _userDbContext.Users.Update(user);
+            return (await _userDbContext.SaveChangesAsync()) > 0 ? user : null ;
+        }
+
+        public async Task<User?> IsValidOtp(string userNameOrEmail, string otp)
+        {
+            var user = await GetUserByEmail(userNameOrEmail) ?? await GetUserByUserName(userNameOrEmail);
+            if (user == null) return null;
+
+            if (user.LastForgotPasswordOTP == otp && user.OTPExpirationTime >= DateTime.UtcNow) return user;
+            return null;
+        }
+
+        public async Task<User?> UpdatePassword(Guid userId, string password)
+        {
+            var user = await GetUser(userId);
+            if(user == null)
+            {
+                return null;
+            }
+
+            user.Password = password;
+            _userDbContext.Users.Update(user);
+            return await _userDbContext.SaveChangesAsync() > 0 ? user : null;
         }
     }
 }

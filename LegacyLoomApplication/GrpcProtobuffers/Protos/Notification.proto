@@ -1,0 +1,20 @@
+syntax = "proto3";
+
+option csharp_namespace = "GrpcNotificationService.Protos";
+
+package GrpcNotificationClient;
+
+service GrpcNotificationService {
+  rpc SendOtp (SendOtpRequest) returns (SendOtpResponse);
+}
+
+message SendOtpRequest {
+  string email = 1;
+  string username = 2;
+  string otp = 3;
+}
+
+message SendOtpResponse {
+  bool success = 1;
+  string message = 2;
+}

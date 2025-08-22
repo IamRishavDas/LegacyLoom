@@ -1,5 +1,7 @@
 ﻿using RequestFeatureShared;
 using ServiceResponseShared;
+using UserAuthenticationService.CustomValidations;
+using UserAuthenticationService.DTOs.UserAuthenticationDTOs;
 using UserAuthenticationService.DTOs.UserDTOs;
 using UserAuthenticationService.RequestFeatures;
 
@@ -17,5 +19,8 @@ namespace UserAuthenticationService.Services
         Task<ServiceResponse> PermanentDeleteUserAsync(Guid id);
         Task<ServiceResponse> SoftDeleteUserAsync(Guid id);
         Task<ServiceResponse<UserDTO>> UpdateUserAsync(Guid id, UserUpdateDTO userUpdate);
+        Task<ServiceResponse> SendForgotPasswordOTPByUserNameOrEmail(string userNameOrEmail);
+        Task<ServiceResponse<UserLoginResponse>> ValidateOtp(string userNameOrEmail, string otp);
+        Task<ServiceResponse<UserDTO>> ResetPassword(string password, string? userId, Guid bodyMentionedUserId);
     }
 }
