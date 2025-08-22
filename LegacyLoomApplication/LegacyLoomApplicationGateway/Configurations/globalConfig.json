@@ -82,7 +82,7 @@
       "DownstreamScheme": "https",
       "DownstreamHostAndPorts": [
         {
-          "Host": "notificationservice20250805022502-d6dfbdepgmegh4ax.canadacentral-01.azurewebsites.net",
+          "Host": "notificationservice20250822113633-hyg2cbajfgf9g5fw.canadacentral-01.azurewebsites.net",
           "Port": 443
           //"Host": "localhost",
           //"Port": 7276
