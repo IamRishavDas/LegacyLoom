@@ -1,6 +1,7 @@
 ﻿using AuthenticationManager;
 using AutoMapper;
 using EventModelsShared;
+using Grpc.Core;
 using Grpc.Net.Client;
 using GrpcNotificationService.Protos;
 using MassTransit;

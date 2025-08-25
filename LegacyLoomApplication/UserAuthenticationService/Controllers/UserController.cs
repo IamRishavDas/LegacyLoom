@@ -126,8 +126,8 @@ namespace UserAuthenticationService.Controllers
             return StatusCode(users.StatusCode, users);
         }
 
-        [HttpPost("forgot-password/{userNameOrEmail}")]
-        public async Task<IActionResult> ForgotPassword([FromRoute]string userNameOrEmail)
+        [HttpPost("forgot-password")]
+        public async Task<IActionResult> ForgotPassword([FromBody]string userNameOrEmail)
         {
             var response = await _userService.SendForgotPasswordOTPByUserNameOrEmail(userNameOrEmail);
             return StatusCode(response.StatusCode, response);
@@ -142,7 +142,7 @@ namespace UserAuthenticationService.Controllers
 
         [HttpPost("reset-password")]
         [Authorize(Roles = "User")]
-        public async Task<ActionResult<UserLoginResponse>> ResetPassword([FromBody] ResetPasswordDTO resetPasswordDTO)
+        public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordDTO resetPasswordDTO)
         {
             var userId = User.FindFirst("UserId")?.Value;
             var response = await _userService.ResetPassword(resetPasswordDTO.Password, userId, resetPasswordDTO.UserId);

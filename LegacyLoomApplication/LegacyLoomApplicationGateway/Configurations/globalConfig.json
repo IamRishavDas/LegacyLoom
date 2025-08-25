@@ -23,6 +23,80 @@
     },
 
     {
+      "DownstreamPathTemplate": "/api/users/forgot-password",
+      "DownstreamScheme": "https",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "userauthenticationservice20250805012747-dwgxabdwhda2agfv.canadacentral-01.azurewebsites.net",
+          "Port": 443
+          //"Host": "localhost",
+          //"Port": 7160
+        }
+      ],
+      "UpstreamPathTemplate": "/gateway/api/users/forgot-password",
+      "UpstreamHttpMethod": [ "POST" ],
+
+      "RateLimitOptions": {
+        "EnableRateLimiting": true,
+        "Period": "15s",
+        "Limit": 4,
+        "PeriodTimespan": 10,
+        "ClientIdHeader": "Authorization"
+      }
+    },
+
+    {
+      "DownstreamPathTemplate": "/api/users/forgot-password/validate",
+      "DownstreamScheme": "https",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "userauthenticationservice20250805012747-dwgxabdwhda2agfv.canadacentral-01.azurewebsites.net",
+          "Port": 443
+          //"Host": "localhost",
+          //"Port": 7160
+        }
+      ],
+      "UpstreamPathTemplate": "/gateway/api/users/forgot-password/validate",
+      "UpstreamHttpMethod": [ "POST" ],
+
+      "RateLimitOptions": {
+        "EnableRateLimiting": true,
+        "Period": "15s",
+        "Limit": 4,
+        "PeriodTimespan": 10,
+        "ClientIdHeader": "Authorization"
+      }
+    },
+
+    {
+      "DownstreamPathTemplate": "/api/users/reset-password",
+      "DownstreamScheme": "https",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "userauthenticationservice20250805012747-dwgxabdwhda2agfv.canadacentral-01.azurewebsites.net",
+          "Port": 443
+          //"Host": "localhost",
+          //"Port": 7160
+        }
+      ],
+      "UpstreamPathTemplate": "/gateway/api/users/reset-password",
+      "UpstreamHttpMethod": [ "POST" ],
+
+      "RateLimitOptions": {
+        "EnableRateLimiting": true,
+        "Period": "15s",
+        "Limit": 4,
+        "PeriodTimespan": 10,
+        "ClientIdHeader": "Authorization"
+      },
+
+      "AuthenticationOptions": {
+        "AuthenticationProviderKey": "Bearer",
+        "AllowedScopes": []
+      }
+    },
+
+    {
       "DownstreamPathTemplate": "/api/users/{everything}",
       "DownstreamScheme": "https",
       "DownstreamHostAndPorts": [
@@ -65,7 +139,7 @@
           //"Port": 7160
         }
       ],
-      "UpstreamPathTemplate": "/gateway/api/users/{everything}",
+      "UpstreamPathTemplate": "/gateway/api/users",
       "UpstreamHttpMethod": [ "POST" ],
 
       "RateLimitOptions": {
