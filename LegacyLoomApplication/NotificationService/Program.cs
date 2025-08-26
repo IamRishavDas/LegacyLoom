@@ -31,6 +31,7 @@ builder.Services.AddSingleton<IMongoClient>(_ =>
 
     return new MongoClient(connectionString);
 });
+builder.Services.AddGrpc();
 
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
@@ -46,6 +47,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+app.MapGrpcService<NotificationSender>();
 app.UseHttpsRedirection();
 
 app.UseAuthentication();

@@ -6,6 +6,7 @@ using ServiceResponseShared;
 using UserAuthenticationService.RequestFeatures;
 using System.Text.Json;
 using RequestFeatureShared.Constants;
+using UserAuthenticationService.DTOs.UserAuthenticationDTOs;
 
 namespace UserAuthenticationService.Controllers
 {
@@ -123,6 +124,29 @@ namespace UserAuthenticationService.Controllers
             var (users, metadata) = await _userService.GetDeletedUsersAsync(userRequestParams);
             Response.Headers.Append(HeaderKey.PAGINATION, JsonSerializer.Serialize(metadata));
             return StatusCode(users.StatusCode, users);
+        }
+
+        [HttpPost("forgot-password")]
+        public async Task<IActionResult> ForgotPassword([FromBody]string userNameOrEmail)
+        {
+            var response = await _userService.SendForgotPasswordOTPByUserNameOrEmail(userNameOrEmail);
+            return StatusCode(response.StatusCode, response);
+        }
+
+        [HttpPost("forgot-password/validate")]
+        public async Task<IActionResult> ValidatePassword([FromBody] UserOtpValidationDTO userOtpValidationDTO)
+        {
+            var response = await _userService.ValidateOtp(userOtpValidationDTO.UserNameOrEmail, userOtpValidationDTO.OTP);
+            return StatusCode(response.StatusCode, response);
+        }
+
+        [HttpPost("reset-password")]
+        [Authorize(Roles = "User")]
+        public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordDTO resetPasswordDTO)
+        {
+            var userId = User.FindFirst("UserId")?.Value;
+            var response = await _userService.ResetPassword(resetPasswordDTO.Password, userId, resetPasswordDTO.UserId);
+            return StatusCode(response.StatusCode, response);
         }
     }
 }

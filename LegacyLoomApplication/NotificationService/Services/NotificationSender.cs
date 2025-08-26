@@ -1,12 +1,15 @@
-﻿using MailKit.Net.Smtp;
+﻿using Grpc.Core;
+using GrpcNotificationService.Protos;
+using MailKit.Net.Smtp;
 using MimeKit;
 using NotificationService.EmailTemplates;
 using ServiceResponseShared;
 using System.Net;
+using static GrpcNotificationService.Protos.GrpcNotificationService;
 
 namespace NotificationService.Services
 {
-    public class NotificationSender : INotificationSender
+    public class NotificationSender : GrpcNotificationServiceBase, INotificationSender
     {
         private readonly Templates _templates;
 
@@ -56,6 +59,37 @@ namespace NotificationService.Services
             catch (Exception ex)
             {
                 return ServiceResponse<string>.Failure("Error while sending the welcome notification", ex.Message, (int)HttpStatusCode.InternalServerError);
+            }
+        }
+
+        public async override Task<SendOtpResponse> SendOtp(SendOtpRequest request, ServerCallContext context)
+        {
+            try
+            {
+                var message = new MimeMessage();
+                message.From.Add(new MailboxAddress(_senderName, _senderEmail));
+                message.To.Add(new MailboxAddress(request.Username, request.Email));
+                message.Subject = "Legacy Loom account recovery";
+
+                var bodyBuilder = new BodyBuilder()
+                {
+                    HtmlBody = _templates.GetTemplate(TemplateName.OTP_RECOVERY, request.Username, otp: request.Otp)
+                };
+
+                message.Body = bodyBuilder.ToMessageBody();
+
+                using var client = new SmtpClient();
+                await client.ConnectAsync(_smtpServer, _port, MailKit.Security.SecureSocketOptions.StartTls);
+
+                await client.AuthenticateAsync(_senderEmail, _appPassword);
+
+                var result = await client.SendAsync(message);
+                await client.DisconnectAsync(true);
+                return new SendOtpResponse() { Success = true, Message = "Otp sended successfully" };
+            }
+            catch (Exception ex)
+            {
+                return new SendOtpResponse { Success = false, Message = ex.Message };
             }
         }
     }

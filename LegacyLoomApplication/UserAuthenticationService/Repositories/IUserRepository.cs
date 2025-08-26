@@ -17,5 +17,8 @@ namespace UserAuthenticationService.Repositories
         Task<bool> PermanentDeleteUserById(Guid id);
         Task<bool> SoftDeleteUserById(Guid id);
         Task<User?> UpdateUserById(Guid id, UserUpdateDTO userUpdate);
+        Task<User?> InsertForgotPasswordOTPandExpirationTime(Guid userId, string otp);
+        Task<User?> IsValidOtp(string userNameOrEmail, string otp);
+        Task<User?> UpdatePassword(Guid userId, string password);
     }
 }

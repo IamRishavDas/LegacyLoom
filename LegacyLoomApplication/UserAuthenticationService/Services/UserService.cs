@@ -1,15 +1,20 @@
-﻿using AutoMapper;
+﻿using AuthenticationManager;
+using AutoMapper;
 using EventModelsShared;
+using Grpc.Core;
+using Grpc.Net.Client;
+using GrpcNotificationService.Protos;
 using MassTransit;
 using RequestFeatureShared;
 using ServiceResponseShared;
 using System.Net;
-using System.Threading.Tasks;
+using UserAuthenticationService.DTOs.UserAuthenticationDTOs;
 using UserAuthenticationService.DTOs.UserDTOs;
 using UserAuthenticationService.Models;
 using UserAuthenticationService.Repositories;
 using UserAuthenticationService.RequestFeatures;
 using UserAuthenticationService.Utils;
+using static GrpcNotificationService.Protos.GrpcNotificationService;
 
 namespace UserAuthenticationService.Services
 {
@@ -18,14 +23,18 @@ namespace UserAuthenticationService.Services
         private readonly IUserRepository _userRepository;
         private readonly PasswordHasher _passwordHasher;
         private readonly IPublishEndpoint _publishEndpoint;
+        private readonly AuthenticationTokenProvider _tokenProvider;
+        private readonly string _notificationServiceGrpcServer;
         private readonly IMapper _mapper;
 
-        public UserService(IUserRepository userRepository, PasswordHasher passwordHasher, IPublishEndpoint publishEndpoint, IMapper mapper)
+        public UserService(IUserRepository userRepository, PasswordHasher passwordHasher, IPublishEndpoint publishEndpoint, IMapper mapper, AuthenticationTokenProvider tokenProvider, IConfiguration configuration)
         {
             _userRepository = userRepository;
             _passwordHasher = passwordHasher;
             _publishEndpoint = publishEndpoint;
+            _tokenProvider = tokenProvider;
             _mapper = mapper;
+            _notificationServiceGrpcServer = configuration["GrpcServer:NotificationServiceGrpcServer"] ?? throw new Exception("Notificaiton Service Grpc server link not found");
         }
 
         public async Task<(ServiceResponse<IEnumerable<UserDTO>> users, MetaData metadata)> GetUsersAsync(UserRequestParameters userRequestParams, bool includeDeleted = false)
@@ -304,6 +313,123 @@ namespace UserAuthenticationService.Services
                     "Error while retrieving deleted users",
                     new List<string> { ex.Message },
                     (int)HttpStatusCode.BadRequest), metadata: new MetaData());
+            }
+        }
+
+        public async Task<ServiceResponse> SendForgotPasswordOTPByUserNameOrEmail(string userNameOrEmail)
+        {
+            try
+            {
+                string email = "";
+                userNameOrEmail = userNameOrEmail.Trim();
+                var user = await _userRepository.GetUserByEmail(userNameOrEmail);
+
+                if (user == null)
+                {
+                    user = await _userRepository.GetUserByUserName(userNameOrEmail);
+                    if (user == null) return ServiceResponse.Failure("This user is not registered", (int)HttpStatusCode.NotFound);
+
+                    email = user.Email;
+                }
+                else
+                {
+                    email = user.Email;
+                }
+
+                var otp = OTPGenerator.Generate();
+                // gRPC call to the email service for sending the otp
+
+                using var channel = GrpcChannel.ForAddress(_notificationServiceGrpcServer);
+                var client = new GrpcNotificationServiceClient(channel);
+                var grpcRequest = new SendOtpRequest()
+                {
+                    Email = email,
+                    Username = user.Username,
+                    Otp = otp
+                };
+
+                var updatedUser = await _userRepository.InsertForgotPasswordOTPandExpirationTime(user.Id, otp);
+
+                if (updatedUser == null)
+                {
+                    return ServiceResponse.Failure("Error: please try again later", (int)HttpStatusCode.InternalServerError);
+                }
+
+                var response = await client.SendOtpAsync(grpcRequest);
+
+                {
+                    if (response.Success)
+                        return ServiceResponse.SuccessResult((int)HttpStatusCode.OK);
+                }
+
+                return ServiceResponse.Failure("Error occoured", (int)HttpStatusCode.BadRequest);
+            }
+            catch (Exception ex)
+            {
+                return ServiceResponse.Failure("Error while sending otp", [ex.Message], (int)HttpStatusCode.InternalServerError);
+            }
+        }
+
+        public async Task<ServiceResponse<UserLoginResponse>> ValidateOtp(string userNameOrEmail, string otp)
+        {
+            try
+            {
+                var user = await _userRepository.IsValidOtp(userNameOrEmail.Trim(), otp.Trim());
+                if (user != null)
+                {
+                    var (token, tokenExpiryTime) = _tokenProvider.GenerateJwtToken(user.Id, user.Username, user.Role.ToString(), isTokenGeneratedWhileLogin: true);
+                    var response = new UserLoginResponse
+                    {
+                        Id = user.Id,
+                        UserName = user.Username,
+                        Email = user.Email,
+                        Role = user.Role.ToString(),
+                        Token = token,
+                        ExpiresIn = (int)tokenExpiryTime.Subtract(DateTime.Now).TotalSeconds
+                    };
+                    return ServiceResponse<UserLoginResponse>.SuccessResult(response, (int)HttpStatusCode.OK);
+                }
+                return ServiceResponse<UserLoginResponse>.Failure("Invalid OTP", (int)HttpStatusCode.BadRequest);
+            }
+            catch (Exception ex)
+            {
+                return ServiceResponse<UserLoginResponse>.Failure("Error try again later", [ex.Message], (int)HttpStatusCode.BadRequest);
+            }
+        }
+
+        public async Task<ServiceResponse<UserDTO>> ResetPassword(string password, string? userId, Guid u)
+        {
+
+            if (userId == null || !Guid.TryParse(userId, out Guid _id))
+            {
+                return ServiceResponse<UserDTO>.Failure("Invalid user id", (int)HttpStatusCode.BadRequest);
+            }
+
+            try
+            {
+                var user = await _userRepository.GetUser(u);
+
+                if(user == null)
+                {
+                    return ServiceResponse<UserDTO>.Failure("User does not exist", (int)HttpStatusCode.BadRequest);
+                }
+
+                if(user.Id != _id)
+                {
+                    return ServiceResponse<UserDTO>.Failure("Unauthorized to perform this operation", (int)HttpStatusCode.Unauthorized);
+                }
+                var updatedUser = await _userRepository.UpdatePassword(user.Id, _passwordHasher.HashPassword(password.Trim()));
+
+                if(updatedUser == null)
+                {
+                    ServiceResponse<UserDTO>.Failure("Error while updating new password", (int)HttpStatusCode.InternalServerError);
+                }
+
+                return ServiceResponse<UserDTO>.SuccessResult(_mapper.Map<UserDTO>(user), (int)HttpStatusCode.OK);
+            }
+            catch (Exception ex)
+            {
+                return ServiceResponse<UserDTO>.Failure("Error while updaing user", [ex.Message], (int)HttpStatusCode.InternalServerError);
             }
         }
     }
