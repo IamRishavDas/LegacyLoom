@@ -1,8 +1,7 @@
 package com.LegacyLoom.LegacyLoomAi.DTOs;
 
-import java.util.ArrayList;
-import java.util.List;
 
+@SuppressWarnings("unused")
 public class ServiceResponse<T> {
     private boolean success;
     private T data;
@@ -26,6 +25,7 @@ public class ServiceResponse<T> {
     private ServiceResponse() {
 
     }
+
     public static <T> ServiceResponse<T> success(T data) {
         return new ServiceResponse<>(data);
     }
