@@ -1,7 +1,6 @@
 package com.LegacyLoom.LegacyLoomAi.Services;
 
 import com.LegacyLoom.LegacyLoomAi.DTOs.ServiceResponse;
-import com.LegacyLoom.LegacyLoomAi.Models.AudioTrack;
 import com.fasterxml.jackson.databind.JsonNode;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -21,7 +20,6 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.util.Base64;
-import java.util.UUID;
 
 @Service
 public class TextToSpeechService {
@@ -32,13 +30,6 @@ public class TextToSpeechService {
     @Value("${google.gemini.url}")
     private String geminiUrl;
 
-    private CloudinaryService cloudinaryService;
-    private AudioTrackService audioTrackService;
-
-    public TextToSpeechService(CloudinaryService cloudinaryService, AudioTrackService trackService) {
-        this.cloudinaryService = cloudinaryService;
-        this.audioTrackService = trackService;
-    }
 
     @SuppressWarnings("unused")
     public ServiceResponse<byte[]> generateSpeech(String storyContent) {
