@@ -1,9 +1,6 @@
 ﻿using AuthenticationManager;
-using Microsoft.EntityFrameworkCore;
 using ServiceResponseShared;
-using System;
 using System.Net;
-using System.Threading.Tasks;
 using UserAuthenticationService.DTOs.UserAuthenticationDTOs;
 using UserAuthenticationService.Models;
 using UserAuthenticationService.Repositories;
@@ -28,7 +25,7 @@ namespace UserAuthenticationService.Services
         {
             try
             {
-                var user = await _userRepository.GetUserByUserName(userLoginRequest.UserName);
+                var user = await _userRepository.GetUserByUserName(userLoginRequest.UserName.Trim());
                 if (user == null || !_passwordHasher.VerifyPassword(userLoginRequest.Password, user.Password))
                 {
                     return (false, null);
@@ -46,7 +43,7 @@ namespace UserAuthenticationService.Services
         {
             try
             {
-                var user = await _userRepository.GetUserByEmail(userLoginRequest.Email.ToLower());
+                var user = await _userRepository.GetUserByEmail(userLoginRequest.Email.Trim().ToLower());
                 if (user == null || !_passwordHasher.VerifyPassword(userLoginRequest.Password, user.Password))
                 {
                     return (false, null);
